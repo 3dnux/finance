@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, Switch, View } from 'react-native';
 
+import { CatBadge } from '@/components/CatFace';
 import { Screen, ScreenHeader } from '@/components/Screen';
 import { Sheet } from '@/components/Sheet';
 import { AppText, Card, Divider, IconCircle, ListRow, Segmented } from '@/components/ui';
@@ -62,6 +63,22 @@ export default function SettingsScreen() {
             { value: 'light', label: 'Claro' },
             { value: 'dark', label: 'Oscuro' },
           ]}
+        />
+
+        <Divider />
+
+        <ListRow
+          title="Gatito de reacciones"
+          subtitle={settings.mascot ? 'Reacciona a ingresos y gastos' : 'Desactivado'}
+          left={<CatBadge mood={settings.mascot ? 'happy' : 'neutral'} size={38} />}
+          right={
+            <Switch
+              accessibilityLabel="Gatito de reacciones"
+              value={settings.mascot}
+              onValueChange={(mascot) => updateSettings({ mascot })}
+              trackColor={{ true: colors.primary, false: colors.border }}
+            />
+          }
         />
       </Card>
 

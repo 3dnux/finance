@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CatReaction } from '@/components/CatReaction';
 import { DatePicker } from '@/components/DatePicker';
 import { SelectField, TextField } from '@/components/Field';
 import { Keypad } from '@/components/Keypad';
@@ -11,6 +12,7 @@ import { Sheet } from '@/components/Sheet';
 import { AppText, Button, IconCircle, ListRow, Segmented } from '@/components/ui';
 import { formatRelativeDay, today } from '@/lib/date';
 import { accountTypeIcon } from '@/lib/defaults';
+import { averageAmount, moodForTransaction, type CatMood } from '@/lib/mascot';
 import { amountToInput, currencyInfo, formatInputDisplay, parseAmount } from '@/lib/money';
 import { useFinance } from '@/store/FinanceProvider';
 import { fontSize, radius, spacing, useTheme } from '@/theme';
@@ -40,6 +42,7 @@ export default function TransactionScreen() {
 
   const [picker, setPicker] = useState<null | 'category' | 'account' | 'toAccount' | 'note'>(null);
   const [dateOpen, setDateOpen] = useState(false);
+  const [reaction, setReaction] = useState<CatMood | null>(null);
 
   const amount = parseAmount(amountInput);
   const isTransfer = type === 'transfer';
@@ -85,6 +88,12 @@ export default function TransactionScreen() {
 
     if (existing) updateTransaction({ ...existing, ...payload });
     else addTransaction(payload);
+
+    // El gatito solo opina de los movimientos nuevos: al editar, salimos directamente.
+    if (settings.mascot && !existing) {
+      setReaction(moodForTransaction(type, amount, averageAmount(state.transactions, type)));
+      return;
+    }
     router.back();
   };
 
@@ -316,6 +325,17 @@ export default function TransactionScreen() {
       </Sheet>
 
       <DatePicker visible={dateOpen} value={date} onClose={() => setDateOpen(false)} onSelect={setDate} />
+
+      <CatReaction
+        visible={reaction !== null}
+        mood={reaction ?? 'neutral'}
+        amount={amount}
+        currency={settings.currency}
+        onDone={() => {
+          setReaction(null);
+          router.back();
+        }}
+      />
     </View>
   );
 }

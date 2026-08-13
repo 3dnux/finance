@@ -14,6 +14,25 @@ se guardan en el propio dispositivo: no hay servidores, cuentas de usuario ni re
 | **Análisis** | Comparativa de ingresos y gastos de los últimos 6 meses, media diaria, variación frente al mes anterior, evolución del balance y desglose por categoría. |
 | **Ajustes** | Moneda, tema claro/oscuro/sistema, gestión de cuentas y categorías, copia de seguridad y datos de ejemplo. |
 
+### El gatito
+
+La app tiene una mascota que opina de tus finanzas. Al registrar un movimiento aparece
+su cara y reacciona:
+
+| Movimiento | Reacción |
+| --- | --- |
+| Ingreso | Ojos cerrados de felicidad, sonrisa de gato y mofletes sonrojados, con corazones subiendo. |
+| Ingreso grande | Ojos de corazón: se enamora. |
+| Gasto | Cejas caídas, pupilas encogidas, boca torcida, tiembla de rabia y le sale la marca de enfado. |
+| Gasto grande | Bufido: boca abierta con colmillos, cejas al máximo y nubes de vapor. |
+| Transferencia | Ni fu ni fa: el dinero solo cambia de bolsillo. |
+
+En el **Resumen** hay además un gatito permanente que refleja cómo va el mes: se enamora
+si ahorras mucho, se enfada si te has pasado de algún presupuesto y se enfurece si gastas
+más de lo que ingresas. Está dibujado con SVG (nada de imágenes) y animado con la API
+`Animated`; respeta el ajuste de *reducir movimiento* del sistema y se puede apagar del
+todo en **Ajustes → Gatito de reacciones**.
+
 Otros detalles:
 
 - **Gastos, ingresos y transferencias** entre cuentas (las transferencias mueven dinero
@@ -55,12 +74,13 @@ en `app.json`.
 
 ```bash
 npm run typecheck   # TypeScript en modo estricto
-npm test            # 65 tests de la lógica financiera
+npm test            # 82 tests de la lógica financiera y de la mascota
 ```
 
 Los tests cubren la parte donde un error cuesta dinero: conversión y formato de importes,
 cálculo de saldos, resúmenes mensuales, presupuestos, filtros, fechas y las reducciones
-de estado (incluido qué pasa con los movimientos al borrar una cuenta o una categoría).
+de estado (incluido qué pasa con los movimientos al borrar una cuenta o una categoría),
+más los estados de ánimo del gatito.
 
 ## Cómo está organizado
 
@@ -73,8 +93,8 @@ app/                      Rutas (expo-router)
   budgets/edit.tsx        Alta y edición de presupuestos
   data/backup.tsx         Exportar e importar
 src/
-  components/             UI reutilizable, gráficos SVG, teclado, calendario
-  lib/                    Lógica pura: dinero, fechas, selectores, datos por defecto
+  components/             UI reutilizable, gráficos SVG, teclado, calendario, gatito
+  lib/                    Lógica pura: dinero, fechas, selectores, ánimo del gatito
   store/                  Estado global (reducer + persistencia en AsyncStorage)
   theme/                  Colores, espaciados y tipografía
   types/                  Modelo de datos

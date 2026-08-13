@@ -50,6 +50,8 @@ export interface Budget {
 export interface Settings {
   currency: string;
   themeMode: 'system' | 'light' | 'dark';
+  /** Muestra el gatito que reacciona a ingresos y gastos. */
+  mascot: boolean;
   onboarded: boolean;
 }
 

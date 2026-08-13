@@ -58,6 +58,7 @@ export function initialState(): AppState {
     settings: {
       currency: 'EUR',
       themeMode: 'system',
+      mascot: true,
       onboarded: false,
     },
   };

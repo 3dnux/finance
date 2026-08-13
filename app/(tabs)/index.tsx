@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
+import { CatFace } from '@/components/CatFace';
 import { DonutChart } from '@/components/charts';
 import { MonthSwitcher } from '@/components/MonthSwitcher';
 import { Screen } from '@/components/Screen';
@@ -10,6 +11,7 @@ import { TransactionRow } from '@/components/TransactionRow';
 import { AppText, Button, Card, Divider, EmptyState, IconCircle, ProgressBar, SectionHeader } from '@/components/ui';
 import { currentMonthKey, monthLabel } from '@/lib/date';
 import { accountTypeIcon } from '@/lib/defaults';
+import { isAngryMood, isHappyMood, monthCommentFor, moodForMonth, phraseFor } from '@/lib/mascot';
 import { formatMoney, formatPercent } from '@/lib/money';
 import {
   accountBalances,
@@ -67,6 +69,12 @@ export default function DashboardScreen() {
 
   const atRisk = budgetRows.filter((row) => row.status !== 'ok').slice(0, 3);
   const isEmpty = transactions.length === 0;
+
+  const budgetsOverCount = budgetRows.filter((row) => row.status === 'over').length;
+  const monthMood = useMemo(() => moodForMonth(summary, budgetsOverCount), [summary, budgetsOverCount]);
+  const moodAccent = isHappyMood(monthMood) ? colors.income : isAngryMood(monthMood) ? colors.expense : colors.border;
+  // La frase cambia con el mes, no en cada render: así no baila mientras se navega.
+  const phraseIndex = useMemo(() => Number(month.replace('-', '')) % 4, [month]);
 
   return (
     <Screen contentStyle={{ paddingTop: spacing.xl }}>
@@ -186,6 +194,23 @@ export default function DashboardScreen() {
           ) : null}
         </View>
       </Card>
+
+      {/* El gatito opina del mes en curso */}
+      {state.settings.mascot ? (
+        <Card style={{ marginTop: spacing.md, borderColor: moodAccent, borderWidth: 1.5 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
+            <CatFace mood={monthMood} size={72} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <AppText weight="800" color={moodAccent}>
+                {phraseFor(monthMood, phraseIndex)}
+              </AppText>
+              <AppText variant="caption" muted>
+                {monthCommentFor(monthMood, summary, budgetsOverCount)}
+              </AppText>
+            </View>
+          </View>
+        </Card>
+      ) : null}
 
       {isEmpty ? (
         <Card style={{ marginTop: spacing.xl }}>
