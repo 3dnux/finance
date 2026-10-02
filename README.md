@@ -15,8 +15,20 @@ la red **Solana**.
 | Lenguaje del juego | C# (Unity) |
 | Premio | El ganador se lleva todo el pozo |
 | Comisión de la casa | 20% (`fee_bps = 2000`, tope en el contrato: 25%) |
+| Billetera en PC | Billetera dentro del juego (el SDK no conecta Phantom en Windows); el jugador le manda USDC |
 
 Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a la casa.
+
+## Estructura del repo
+
+| Carpeta | Qué hay |
+|---|---|
+| `programs/paga-para-morir` | Contrato escrow (Rust + Anchor) y sus pruebas con LiteSVM. |
+| `idl/` | IDL del contrato. |
+| `unity/PagaParaMorir` | Proyecto de Unity: billetera, lobby y pago de entradas ([README](unity/PagaParaMorir/README.md)). |
+| `dotnet/PagaParaMorir.Escrow` | Compila el cliente C# de Unity (`Assets/PagaParaMorir/Escrow`) fuera del editor. |
+| `dotnet/PagaParaMorir.Escrow.Tests` | Pruebas del cliente C#, incluidas partidas reales contra `solana-test-validator`. |
+| `dotnet/PagaParaMorir.DevTool` | `ppm`: crea y maneja salas desde la terminal mientras no exista el backend. |
 
 ## Concepto
 
@@ -88,6 +100,29 @@ anchor build
 cargo test -p paga-para-morir
 ```
 
+### Cliente C# (Unity)
+
+Requisitos: .NET SDK 8. Las pruebas de integración levantan `solana-test-validator`
+con el programa compilado (`anchor build` antes); si no está instalado, se saltan.
+
+```bash
+cd dotnet
+dotnet test
+```
+
+### Herramienta `ppm` (servidor manual)
+
+```bash
+cd dotnet
+dotnet run --project PagaParaMorir.DevTool -- list --url devnet
+dotnet run --project PagaParaMorir.DevTool -- create --keypair server.json --id 1 --entry 5 --max 10
+dotnet run --project PagaParaMorir.DevTool -- start  --keypair server.json --id 1
+dotnet run --project PagaParaMorir.DevTool -- settle --keypair server.json --id 1 --winner <PUBKEY>
+```
+
+Comandos: `config`, `init`, `list`, `create`, `start`, `settle`, `cancel`, `close`
+(`--help` para ver las opciones).
+
 ### Desplegar en devnet
 
 ```bash
@@ -98,8 +133,25 @@ solana airdrop 2
 anchor deploy --provider.cluster devnet
 ```
 
-Después llama `initialize_config` con la misma wallet que desplegó (es la
-upgrade authority) y `fee_bps = 2000`.
+Después configura el juego con la misma wallet que desplegó (es la upgrade authority):
+
+```bash
+cd dotnet
+# Mint de USDC de Circle en devnet (verifícalo en https://faucet.circle.com)
+dotnet run --project PagaParaMorir.DevTool -- init \
+  --mint 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \
+  --authority <PUBKEY_DEL_SERVIDOR> --fee-bps 2000
+```
+
+La tesorería queda en la cuenta de USDC de quien firma.
+
+### Probar el cliente en devnet
+
+1. Despliega y configura el programa (arriba).
+2. Crea salas con `ppm create` firmando con la clave del servidor.
+3. Abre el proyecto de Unity, crea una billetera y mándale SOL de prueba (botón en
+   el juego) y USDC de devnet desde <https://faucet.circle.com>.
+4. Entra a una sala desde el juego y termínala con `ppm start` / `ppm settle`.
 
 ## Riesgos a resolver antes de mainnet
 
@@ -113,6 +165,7 @@ upgrade authority) y `fee_bps = 2000`.
 ## Roadmap MVP
 
 1. ~~Programa escrow en Anchor + pruebas.~~ ✅ Falta desplegar en devnet.
-2. Prototipo jugable en Unity: arena de 8–16 jugadores, un mapa, 3–4 armas.
+2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅. Falta el prototipo
+   jugable: arena de 8–16 jugadores, un mapa, 3–4 armas.
 3. Backend de matchmaking + login con wallet + liquidación automática.
 4. Anti-cheat, auditoría, revisión legal → mainnet.
