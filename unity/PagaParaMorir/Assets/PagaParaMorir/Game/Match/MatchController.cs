@@ -43,7 +43,12 @@ namespace PagaParaMorir.Game.Match
         }
 
         [Rpc(SendTo.Everyone, Delivery = RpcDelivery.Unreliable)]
-        public void ShotRpc(Vector3 from, Vector3 to) => Visuals.Tracer(from, to);
+        public void ShotRpc(ulong shooter, Vector3 from, Vector3 to)
+        {
+            // Quien disparó ya dibujó su trazo al instante (predicción); no repetirlo.
+            if (shooter == NetworkManager.LocalClientId && !IsServer) return;
+            Visuals.Tracer(from, to);
+        }
 
         [Rpc(SendTo.Everyone)]
         public void KillFeedRpc(FixedString128Bytes text) => KillFeed?.Invoke(text.ToString());

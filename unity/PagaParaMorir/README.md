@@ -23,6 +23,16 @@ de cada partida.
   - Si todos se desconectan a la vez, la partida se cancela y hay reembolso.
 - **Servidor autoritativo** (Netcode for GameObjects): el cliente solo manda su input;
   el servidor mueve a los jugadores, valida los disparos y aplica el daño.
+- **Predicción del cliente:** tu personaje responde al instante aunque haya latencia.
+  - Tu equipo simula tu movimiento con las mismas reglas que el servidor, 30 ticks por
+    segundo (`Rules/Netcode/Movement.cs`).
+  - Si el servidor no coincide, tu equipo rehace desde su estado y la diferencia se
+    suaviza en la cámara.
+  - Los demás jugadores se dibujan 100 ms en el pasado, interpolados, para que se
+    muevan suave.
+  - El servidor limita los inputs a 30 por segundo, así que mandar inputs de más no
+    sirve para moverse más rápido.
+  - Tus disparos se dibujan al instante, pero el daño lo decide el servidor.
 
 ### Cómo se conecta con el dinero
 
@@ -152,9 +162,10 @@ Assets/PagaParaMorir/
 
 ## Lo que falta en el prototipo
 
-- **Predicción del lado del cliente:** hoy tu movimiento llega con la latencia del
-  servidor. En LAN no se nota; por internet habrá que predecir y reconciliar.
-- **Compensación de lag** para los disparos y **anti-cheat** (el servidor confía en
-  hacia dónde apuntas).
+- **Compensación de lag** para los disparos. Ves a los demás ~100 ms + la mitad de tu
+  ping en el pasado y el servidor valida el disparo con sus posiciones actuales. Por
+  internet, contra alguien que se mueve, hay que apuntar un poco adelante.
+- **Anti-cheat:** el servidor confía en hacia dónde apuntas (aimbots).
+- **Quien hospeda una práctica** ve a los demás moverse a saltos de 30 Hz (no interpola en el host).
 - **Arte y sonido:** todo son primitivas de colores.
 - **Reconexión:** si te desconectas en juego, quedas eliminado.

@@ -28,7 +28,7 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
 | `unity/PagaParaMorir` | Proyecto de Unity: billetera, lobby, partida en red y servidor dedicado ([README](unity/PagaParaMorir/README.md)). |
 | `dotnet/PagaParaMorir.Escrow` | Compila el cliente C# de Unity (`Assets/PagaParaMorir/Escrow`) fuera del editor. |
 | `dotnet/PagaParaMorir.Escrow.Tests` | Pruebas del cliente C#, incluidas partidas reales contra `solana-test-validator`. |
-| `dotnet/PagaParaMorir.Rules.Tests` | Pruebas de las reglas del juego: armas, zona y quién gana. |
+| `dotnet/PagaParaMorir.Rules.Tests` | Pruebas de las reglas del juego (armas, zona, quién gana) y de la predicción, con una red simulada con latencia y pérdida. |
 | `dotnet/PagaParaMorir.Backend` | Backend: salas automáticas, un servidor dedicado por sala y red de seguridad para el dinero ([README](dotnet/PagaParaMorir.Backend/README.md)). |
 | `dotnet/PagaParaMorir.Backend.Tests` | Pruebas del backend (reglas del orquestador, API y contra el contrato real). |
 | `dotnet/PagaParaMorir.DevTool` | `ppm`: maneja salas a mano desde la terminal (útil para pruebas). |
@@ -190,8 +190,8 @@ despliega en un `solana-test-validator` y crea un USDC de prueba.
 
 1. ~~Programa escrow en Anchor + pruebas~~ ✅ · ~~script de despliegue en devnet~~ ✅ (`scripts/deploy.sh`).
 2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅ · ~~prototipo jugable
-   (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅. Falta
-   predicción del cliente, arte y sonido.
+   (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅ · ~~predicción
+   del cliente~~ ✅. Falta compensación de lag, arte y sonido.
 3. ~~Backend: salas automáticas, un servidor por sala y red de seguridad~~ ✅. Falta
    un lanzador para la nube (Edgegap/GameLift), HTTPS y la clave en un KMS.
 4. Anti-cheat, auditoría, revisión legal → mainnet.
