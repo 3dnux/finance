@@ -135,33 +135,45 @@ Comandos: `config`, `init`, `list`, `create`, `start`, `settle`, `cancel`, `clos
 
 ### Desplegar en devnet
 
-```bash
-anchor keys sync              # genera tu propio program ID y lo escribe en el código
-anchor build
-solana config set --url devnet
-solana airdrop 2
-anchor deploy --provider.cluster devnet
-```
-
-Después configura el juego con la misma wallet que desplegó (es la upgrade authority):
+Un solo comando (en Windows, desde WSL):
 
 ```bash
-cd dotnet
-# Mint de USDC de Circle en devnet (verifícalo en https://faucet.circle.com)
-dotnet run --project PagaParaMorir.DevTool -- init \
-  --mint 4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU \
-  --authority <PUBKEY_DEL_SERVIDOR> --fee-bps 2000
+scripts/deploy.sh                  # o: scripts/deploy.sh --start-backend
 ```
 
-La tesorería queda en la cuenta de USDC de quien firma.
+El script:
+
+1. Revisa las herramientas: Solana CLI, Rust y .NET 8.
+2. Crea las llaves en `keys/` si no existen. Esta carpeta nunca se sube al repo:
+   - `admin.json`: despliega y configura.
+   - `server.json`: crea salas y paga premios.
+   - La llave del programa, que define el program ID.
+3. Si el program ID cambió, lo reemplaza en todo el código: Rust, `Anchor.toml`,
+   IDL, Unity, backend y este README. **Sube esos cambios al repo.**
+4. Compila el programa y la herramienta `ppm`.
+5. Despliega el programa.
+   - La primera vez necesita ~5 SOL de devnet. Los pide solo; si el faucet
+     te limita, pídelos en <https://faucet.solana.com>.
+   - Si el programa en la red ya es igual al compilado, no lo vuelve a desplegar.
+6. Configura el juego (`initialize_config`): USDC de Circle en devnet, comisión 20%
+   y el servidor como autoridad. Le pasa 0.5 SOL al servidor.
+7. Escribe `.deploy/devnet/backend.env` y te dice cómo arrancar el backend.
+
+Se puede correr varias veces: salta lo que ya está hecho. Opciones: `--fee-bps`,
+`--rpc`, `--usdc-mint`, `--skip-build` y `--cluster localnet`. Esta última
+despliega en un `solana-test-validator` y crea un USDC de prueba.
+
+**Respalda `keys/`.** Sin `admin.json` no puedes actualizar el programa, y sin
+`server.json` no se pueden pagar los premios.
 
 ### Probar el cliente en devnet
 
-1. Despliega y configura el programa (arriba).
-2. Arranca el backend: abre las salas solo. Con `Launcher:Mode = Process` y la ruta
+1. Corre `scripts/deploy.sh --start-backend`.
+2. El backend abre las salas solo. Con `Launcher:Mode = Process` y la ruta
    del build de Unity, también levanta los servidores de partida.
-3. Abre el proyecto de Unity, crea una billetera y mándale SOL de prueba (botón en
-   el juego) y USDC de devnet desde <https://faucet.circle.com>.
+3. Abre el proyecto de Unity. Si el script cambió el program ID, ya quedó en el código,
+   pero revisa `programId` en el objeto `PagaParaMorir` de la escena. Crea una billetera
+   y mándale SOL de prueba (botón en el juego) y USDC de devnet desde <https://faucet.circle.com>.
 4. Paga una sala desde dos billeteras. Cuando el lobby diga "¡Tu partida está lista!",
    pulsa **Jugar**. Al terminar, el ganador cobra automáticamente.
 
@@ -176,7 +188,7 @@ La tesorería queda en la cuenta de USDC de quien firma.
 
 ## Roadmap MVP
 
-1. ~~Programa escrow en Anchor + pruebas.~~ ✅ Falta desplegar en devnet.
+1. ~~Programa escrow en Anchor + pruebas~~ ✅ · ~~script de despliegue en devnet~~ ✅ (`scripts/deploy.sh`).
 2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅ · ~~prototipo jugable
    (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅. Falta
    predicción del cliente, arte y sonido.

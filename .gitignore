@@ -24,3 +24,5 @@ server.json
 admin.json
 backend-state.json*
 dotnet/**/logs/
+keys/
+.deploy/
