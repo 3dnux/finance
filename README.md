@@ -29,7 +29,9 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
 | `dotnet/PagaParaMorir.Escrow` | Compila el cliente C# de Unity (`Assets/PagaParaMorir/Escrow`) fuera del editor. |
 | `dotnet/PagaParaMorir.Escrow.Tests` | Pruebas del cliente C#, incluidas partidas reales contra `solana-test-validator`. |
 | `dotnet/PagaParaMorir.Rules.Tests` | Pruebas de las reglas del juego: armas, zona y quién gana. |
-| `dotnet/PagaParaMorir.DevTool` | `ppm`: crea y maneja salas desde la terminal mientras no exista el backend. |
+| `dotnet/PagaParaMorir.Backend` | Backend: salas automáticas, un servidor dedicado por sala y red de seguridad para el dinero ([README](dotnet/PagaParaMorir.Backend/README.md)). |
+| `dotnet/PagaParaMorir.Backend.Tests` | Pruebas del backend (reglas del orquestador, API y contra el contrato real). |
+| `dotnet/PagaParaMorir.DevTool` | `ppm`: maneja salas a mano desde la terminal (útil para pruebas). |
 
 ## Concepto
 
@@ -48,7 +50,7 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
       │                                        ▲
       │ juega                                  │ settle(ganador) firmado
       ▼                                        │
-[Servidor dedicado autoritativo] ──resultado──▶ [Backend: matchmaking + oráculo]
+[Servidor dedicado autoritativo] ◀──lanza── [Backend: abre salas + servidores]
 ```
 
 | Componente | Tecnología propuesta |
@@ -57,7 +59,7 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
 | Netcode | Netcode for GameObjects (oficial de Unity), servidor autoritativo |
 | Hosting de servidores | Edgegap / AWS GameLift |
 | Contrato de escrow | Rust + Anchor |
-| Backend | TypeScript (matchmaking, login con wallet, reporte de resultados) |
+| Backend | C# / ASP.NET Core: abre salas, levanta un servidor por sala y cancela partidas atascadas |
 | Custodia de la clave del servidor | Multisig (Squads) / HSM |
 
 ### Programa escrow (`programs/paga-para-morir`)
@@ -111,6 +113,13 @@ cd dotnet
 dotnet test
 ```
 
+### Backend
+
+```bash
+cd dotnet/PagaParaMorir.Backend
+dotnet run      # necesita server.json (clave del servidor); ver su README
+```
+
 ### Herramienta `ppm` (servidor manual)
 
 ```bash
@@ -149,10 +158,12 @@ La tesorería queda en la cuenta de USDC de quien firma.
 ### Probar el cliente en devnet
 
 1. Despliega y configura el programa (arriba).
-2. Crea salas con `ppm create` firmando con la clave del servidor.
+2. Arranca el backend: abre las salas solo. Con `Launcher:Mode = Process` y la ruta
+   del build de Unity, también levanta los servidores de partida.
 3. Abre el proyecto de Unity, crea una billetera y mándale SOL de prueba (botón en
    el juego) y USDC de devnet desde <https://faucet.circle.com>.
-4. Entra a una sala desde el juego y termínala con `ppm start` / `ppm settle`.
+4. Paga una sala desde dos billeteras. Cuando el lobby diga "¡Tu partida está lista!",
+   pulsa **Jugar**. Al terminar, el ganador cobra automáticamente.
 
 ## Riesgos a resolver antes de mainnet
 
@@ -169,6 +180,6 @@ La tesorería queda en la cuenta de USDC de quien firma.
 2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅ · ~~prototipo jugable
    (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅. Falta
    predicción del cliente, arte y sonido.
-3. Backend: crear salas y levantar un servidor dedicado por sala (la liquidación
-   automática ya la hace el servidor de la partida).
+3. ~~Backend: salas automáticas, un servidor por sala y red de seguridad~~ ✅. Falta
+   un lanzador para la nube (Edgegap/GameLift), HTTPS y la clave en un KMS.
 4. Anti-cheat, auditoría, revisión legal → mainnet.

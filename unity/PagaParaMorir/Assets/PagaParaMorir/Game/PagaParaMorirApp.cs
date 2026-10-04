@@ -30,13 +30,18 @@ namespace PagaParaMorir.Game
         public float refreshSeconds = 5f;
 
         [Header("Servidor de partidas")]
-        [Tooltip("Dirección del servidor de partidas (más adelante la dará el backend por sala).")]
+        [Tooltip("URL del backend (dotnet/PagaParaMorir.Backend). Dice en qué servidor se juega cada sala. " +
+                 "Vacío = usar gameServerAddress/gameServerPort para todas.")]
+        public string backendUrl = "http://127.0.0.1:5080";
+        [Tooltip("Servidor fijo si no hay backend; también es el equipo al que se une una práctica.")]
         public string gameServerAddress = "127.0.0.1";
         public ushort gameServerPort = 7777;
         [Tooltip("Puerto para las prácticas sin dinero (crear o unirse).")]
         public ushort practicePort = 7778;
 
         public WalletService Wallet { get; } = new WalletService();
+        /// <summary>null si no hay backend configurado.</summary>
+        public BackendClient Backend => string.IsNullOrWhiteSpace(backendUrl) ? null : new BackendClient(backendUrl);
         public EscrowClient Escrow { get; private set; }
         public StatusBar Status { get; private set; }
         public Transform CanvasRoot { get; private set; }
@@ -128,9 +133,28 @@ namespace PagaParaMorir.Game
 
         public bool InGame => GameSession.Instance != null && GameSession.Instance.InGame;
 
-        /// <summary>Entrar al servidor de una partida pagada.</summary>
-        public void PlayMatch(ulong matchId) =>
-            EnterGame(matchId, (session, ticket) => session.Join(gameServerAddress, gameServerPort, ticket));
+        /// <summary>Entrar al servidor de una partida pagada (el backend dice dónde está).</summary>
+        public async void PlayMatch(ulong matchId)
+        {
+            var address = gameServerAddress;
+            var port = gameServerPort;
+            if (Backend != null)
+            {
+                try
+                {
+                    Status.Info("Buscando el servidor de tu partida…");
+                    var server = await Backend.GetServerAsync(matchId);
+                    address = server.host;
+                    port = (ushort)server.port;
+                }
+                catch (BackendException e)
+                {
+                    Status.Error(e.Message);
+                    return;
+                }
+            }
+            EnterGame(matchId, (session, ticket) => session.Join(address, port, ticket));
+        }
 
         /// <summary>Práctica sin dinero en este equipo (otros pueden unirse con tu IP).</summary>
         public void StartPractice() =>

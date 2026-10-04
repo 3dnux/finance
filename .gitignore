@@ -18,3 +18,9 @@ unity/**/[Ll]ogs/
 unity/**/[Uu]ser[Ss]ettings/
 unity/**/*.csproj
 unity/**/*.sln
+
+# Claves y estado local: nunca al repo
+server.json
+admin.json
+backend-state.json*
+dotnet/**/logs/

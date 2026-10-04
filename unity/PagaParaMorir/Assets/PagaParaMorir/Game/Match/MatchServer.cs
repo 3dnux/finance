@@ -79,7 +79,7 @@ namespace PagaParaMorir.Game.Match
             if (match.State != Escrow.MatchState.Open)
                 throw new InvalidOperationException($"La sala #{_options.MatchId} no está abierta ({match.State}).");
 
-            var settings = new RefereeSettings { MaxPlayers = match.MaxPlayers };
+            var settings = new RefereeSettings { MaxPlayers = match.MaxPlayers, LobbySeconds = _options.LobbySeconds };
             Referee = new MatchReferee(settings, now, match.Players.Select(p => p.Key));
             Debug.Log($"[Servidor] Sala #{match.MatchId}: entrada {Usdc.Format(match.EntryFee)}, " +
                       $"{match.Players.Count}/{match.MaxPlayers} jugadores pagaron.");

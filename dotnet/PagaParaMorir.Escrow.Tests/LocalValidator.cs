@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,10 +22,10 @@ namespace PagaParaMorir.Escrow.Tests
     {
         public const ushort FeeBps = 2000;
         public const long SettleTimeoutSecs = 3600;
-        private const int RpcPort = 18899;
 
         public string SkipReason { get; private set; }
         public IRpcClient Rpc { get; private set; }
+        public string RpcUrl { get; private set; }
         public EscrowClient Client { get; private set; }
         public EscrowProgram Program { get; } = new EscrowProgram();
         public Account Admin { get; } = new Account();
@@ -43,14 +44,18 @@ namespace PagaParaMorir.Escrow.Tests
             if (!File.Exists(so)) { SkipReason = "falta target/deploy/paga_para_morir.so (corre `anchor build`)"; return; }
 
             _ledger = Path.Combine(Path.GetTempPath(), "ppm-ledger-" + Guid.NewGuid().ToString("N"));
+            // Puertos libres al azar: varios proyectos de prueba pueden correr validadores a la vez.
+            var basePort = FreePortBlock();
+            var rpcPort = basePort; // el websocket usa rpcPort + 1
             _process = Process.Start(new ProcessStartInfo
             {
                 FileName = validator,
                 Arguments = string.Join(" ", new[]
                 {
                     "--reset", "--quiet", "--ledger", _ledger,
-                    "--rpc-port", RpcPort.ToString(), "--faucet-port", "19900",
-                    "--gossip-port", "18001", "--dynamic-port-range", "18002-18200",
+                    "--rpc-port", rpcPort.ToString(), "--faucet-port", (basePort + 2).ToString(),
+                    "--gossip-port", (basePort + 3).ToString(),
+                    "--dynamic-port-range", $"{basePort + 10}-{basePort + 90}",
                     "--upgradeable-program", EscrowProgram.DefaultProgramId, so, Admin.PublicKey.Key,
                 }),
                 RedirectStandardOutput = true,
@@ -58,7 +63,8 @@ namespace PagaParaMorir.Escrow.Tests
                 UseShellExecute = false,
             });
 
-            Rpc = ClientFactory.GetClient($"http://127.0.0.1:{RpcPort}");
+            RpcUrl = $"http://127.0.0.1:{rpcPort}";
+            Rpc = ClientFactory.GetClient(RpcUrl);
             Client = new EscrowClient(Rpc, Program);
             await WaitUntilReady();
 
@@ -134,6 +140,33 @@ namespace PagaParaMorir.Escrow.Tests
                 await Task.Delay(500);
             }
             throw new TimeoutException("solana-test-validator no arrancó a tiempo");
+        }
+
+        private static int FreePortBlock()
+        {
+            var random = new Random();
+            for (var attempt = 0; attempt < 50; attempt++)
+            {
+                var basePort = random.Next(200, 600) * 100;
+                if (Enumerable.Range(basePort, 91).All(PortIsFree)) return basePort;
+            }
+            throw new InvalidOperationException("No se encontraron puertos libres para el validador.");
+        }
+
+        private static bool PortIsFree(int port)
+        {
+            try
+            {
+                var tcp = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, port);
+                tcp.Start();
+                tcp.Stop();
+                using var udp = new System.Net.Sockets.UdpClient(port);
+                return true;
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                return false;
+            }
         }
 
         private static string FindValidator()

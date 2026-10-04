@@ -103,7 +103,8 @@ En el objeto `PagaParaMorir` de la escena (componente `PagaParaMorirApp`):
 | `customRpc` | RPC propio (Helius, QuickNode o `http://127.0.0.1:8899`). Vacío = RPC pública. |
 | `programId` | Program ID del escrow. Cámbialo si corriste `anchor keys sync`. |
 | `refreshSeconds` | Cada cuánto se actualizan las salas. |
-| `gameServerAddress` / `gameServerPort` | Servidor de partidas al que se conecta **Jugar** (y **Unirse** a una práctica). |
+| `backendUrl` | Backend que dice en qué servidor se juega cada sala (`http://127.0.0.1:5080`). Vacío = usar el servidor fijo de abajo. |
+| `gameServerAddress` / `gameServerPort` | Servidor fijo si no hay backend; también el equipo al que se une **Unirse** en práctica. |
 | `practicePort` | Puerto de las prácticas sin dinero (7778). |
 
 ## Servidor dedicado de una partida con dinero
@@ -117,23 +118,23 @@ PagaParaMorir -batchmode -nographics -ppm-server \
   -keypair server.json            # la clave del servidor (config.authority)
 ```
 
-Por ahora el cliente se conecta a `gameServerAddress:gameServerPort` (campos de
-`PagaParaMorirApp`). Más adelante el backend levantará un servidor por sala y le
-dirá a cada jugador dónde conectarse.
+Normalmente no lo lanzas tú: el [backend](../../dotnet/PagaParaMorir.Backend/README.md)
+levanta uno por sala cuando pagan 2 jugadores, y el botón **Jugar** le pregunta
+dónde conectarse. El lobby muestra "¡Tu partida está lista!" cuando el servidor está arriba.
 
 ## Probar en devnet
 
 1. Despliega el programa y configúralo con el USDC de devnet
    (ver el [README principal](../../README.md#probar-el-cliente-en-devnet)).
-2. Crea una sala con la herramienta `ppm`:
-   `ppm create --keypair server.json --id 1 --entry 1 --max 4`.
+2. Arranca el [backend](../../dotnet/PagaParaMorir.Backend/README.md): abre las salas solo.
+   Sin backend, crea una a mano: `ppm create --keypair server.json --id 1 --entry 1 --max 4`.
 3. En el juego, crea una billetera, copia la dirección y mándale:
    - SOL de prueba con el botón **Pedir 1 SOL de prueba**.
    - USDC de devnet desde <https://faucet.circle.com> (elige Solana Devnet).
 4. **Pagar y entrar**. Repite con otra billetera (otro equipo o restaurándola).
-5. Lanza el servidor dedicado de esa sala (arriba) y pulsa **Jugar** en ambos.
-   El servidor empieza la partida, y al final le paga al ganador solo.
-   Sin servidor, puedes terminarla a mano con `ppm start` y `ppm settle`.
+5. Con el backend corriendo, cuando aparezca "¡Tu partida está lista!", pulsa **Jugar**
+   en ambos. El servidor empieza la partida y al final le paga al ganador solo.
+   Sin backend, lanza el servidor a mano (arriba) o termina la sala con `ppm start` y `ppm settle`.
 
 ## Estructura
 

@@ -102,6 +102,7 @@ namespace PagaParaMorir.Game.UI
                 var usdc = await escrow.GetUsdcBalanceAsync(me);
                 var sol = await escrow.GetSolBalanceAsync(me);
                 var matches = await escrow.GetMatchesAsync();
+                var servers = await LoadServers(matches.Any(m => m.HasPlayer(me) && m.State == MatchState.Open));
                 if (_group == null || _app.Escrow != escrow) return; // la pantalla cambió mientras cargaba
 
                 _usdc.text = Usdc.Format(usdc);
@@ -110,7 +111,7 @@ namespace PagaParaMorir.Game.UI
 
                 var mine = matches.Where(m => m.HasPlayer(me) && m.State != MatchState.Settled).ToList();
                 var open = matches.Where(m => m.State == MatchState.Open && !m.HasPlayer(me) && !m.IsFull).ToList();
-                RenderMyMatches(mine, config);
+                RenderMyMatches(mine, config, servers);
                 RenderOpenMatches(open, config, usdc);
             }
             finally
@@ -119,7 +120,26 @@ namespace PagaParaMorir.Game.UI
             }
         }
 
-        private void RenderMyMatches(List<MatchAccount> mine, ConfigAccount config)
+        /// <summary>
+        /// Servidores listos según el backend. null = no hay backend (o no respondió):
+        /// entonces Jugar va al servidor fijo de la configuración.
+        /// </summary>
+        private async Task<Dictionary<ulong, GameServerInfo>> LoadServers(bool needed)
+        {
+            var backend = _app.Backend;
+            if (!needed || backend == null) return null;
+            try
+            {
+                return await backend.GetRunningServersAsync();
+            }
+            catch (BackendException e)
+            {
+                Debug.LogWarning(e.Message);
+                return null;
+            }
+        }
+
+        private void RenderMyMatches(List<MatchAccount> mine, ConfigAccount config, Dictionary<ulong, GameServerInfo> servers)
         {
             Ui.Clear(_myMatches);
             if (mine.Count == 0) return;
@@ -133,9 +153,17 @@ namespace PagaParaMorir.Game.UI
                 {
                     case MatchState.Open:
                         Detail(row.info, $"Esperando jugadores · {m.Players.Count}/{m.MaxPlayers} · Pozo {Usdc.Format(m.Pot)}");
+                        var ready = servers == null || servers.ContainsKey(m.MatchId);
+                        if (servers != null)
+                            Detail(row.info, ready
+                                    ? "¡Tu partida está lista! Entra antes de que empiece."
+                                    : "El servidor se abre cuando haya al menos 2 jugadores.",
+                                ready ? Theme.Success : (Color?)null);
                         Ui.Button(row.actions, $"Salir y recuperar {Usdc.Format(m.EntryFee)}",
                             () => Leave(m), Theme.Secondary);
-                        Ui.Button(row.actions, "Jugar", () => _app.PlayMatch(m.MatchId));
+                        Ui.Button(row.actions, ready ? "Jugar" : "Esperando…", () => _app.PlayMatch(m.MatchId),
+                                ready ? Theme.Accent : Theme.Secondary)
+                            .interactable = ready;
                         break;
                     case MatchState.InProgress when EscrowClient.IsSettleExpired(m, config, now):
                         Detail(row.info, "El servidor no reportó ganador a tiempo. Puedes cancelar y recuperar tu entrada.", Theme.Warning);
