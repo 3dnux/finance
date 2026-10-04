@@ -1,0 +1,38 @@
+[package]
+name = "paga-para-morir"
+version = "0.1.0"
+description = "Escrow de USDC para partidas de Paga para Morir"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "paga_para_morir"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+custom-heap = []
+custom-panic = []
+anchor-debug = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "1.2.0"
+anchor-spl = "1.2.0"
+
+[dev-dependencies]
+litesvm = "0.17.0"
+solana-account = "4"
+solana-address = "2"
+solana-clock = "3"
+solana-instruction = "3"
+solana-keypair = "3"
+solana-message = "4"
+solana-signer = "3"
+solana-transaction = "4"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

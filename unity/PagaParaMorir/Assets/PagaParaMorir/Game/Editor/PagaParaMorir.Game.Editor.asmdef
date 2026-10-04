@@ -1,0 +1,19 @@
+{
+    "name": "PagaParaMorir.Game.Editor",
+    "rootNamespace": "PagaParaMorir.Game.Editor",
+    "references": [
+        "PagaParaMorir.Game",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

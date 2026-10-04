@@ -1,0 +1,1394 @@
+{
+  "address": "2NB9Xwtj7BRFkZEvDWWBhuqTWK18ASTogRt1SCGKZGhg",
+  "metadata": {
+    "name": "paga_para_morir",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Escrow de USDC para partidas de Paga para Morir"
+  },
+  "instructions": [
+    {
+      "name": "cancel_match",
+      "docs": [
+        "Cancela la partida para que cada jugador recupere su entrada.",
+        "El servidor puede cancelar en cualquier momento antes de liquidar;",
+        "cualquier otra persona solo si el servidor no liquidó a tiempo."
+      ],
+      "discriminator": [
+        142,
+        136,
+        247,
+        45,
+        92,
+        112,
+        180,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_refund",
+      "docs": [
+        "El jugador recupera su entrada de una partida cancelada."
+      ],
+      "discriminator": [
+        15,
+        16,
+        30,
+        161,
+        255,
+        228,
+        97,
+        60
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_token",
+          "writable": true
+        },
+        {
+          "name": "usdc_mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_match",
+      "docs": [
+        "El servidor cierra una partida terminada y recupera la renta.",
+        "Cualquier saldo sobrante en el vault (por ejemplo, tokens enviados por",
+        "error) se manda a la tesorería."
+      ],
+      "discriminator": [
+        79,
+        174,
+        36,
+        80,
+        233,
+        185,
+        176,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "usdc_mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_match",
+      "docs": [
+        "El servidor abre una sala nueva con su entrada y cupo."
+      ],
+      "discriminator": [
+        107,
+        2,
+        184,
+        145,
+        70,
+        142,
+        17,
+        165
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "match_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "match_id",
+          "type": "u64"
+        },
+        {
+          "name": "entry_fee",
+          "type": "u64"
+        },
+        {
+          "name": "max_players",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initialize_config",
+      "docs": [
+        "Inicializa la configuración global. Solo la upgrade authority del programa",
+        "puede llamarla, para que nadie se adelante después del deploy."
+      ],
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "usdc_mint"
+        },
+        {
+          "name": "treasury"
+        },
+        {
+          "name": "program",
+          "address": "2NB9Xwtj7BRFkZEvDWWBhuqTWK18ASTogRt1SCGKZGhg"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "settle_timeout_secs",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "join_match",
+      "docs": [
+        "El jugador paga su entrada y entra a la sala."
+      ],
+      "discriminator": [
+        244,
+        8,
+        47,
+        130,
+        192,
+        59,
+        179,
+        44
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_token",
+          "writable": true
+        },
+        {
+          "name": "usdc_mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "leave_match",
+      "docs": [
+        "El jugador sale de una sala que aún no empezó y recupera su entrada."
+      ],
+      "discriminator": [
+        199,
+        14,
+        16,
+        91,
+        104,
+        95,
+        166,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "player",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "player_token",
+          "writable": true
+        },
+        {
+          "name": "usdc_mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "settle_match",
+      "docs": [
+        "El servidor reporta al ganador. El ganador recibe el pozo menos la comisión."
+      ],
+      "discriminator": [
+        71,
+        124,
+        117,
+        96,
+        191,
+        217,
+        116,
+        24
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account"
+              }
+            ]
+          }
+        },
+        {
+          "name": "winner_token",
+          "writable": true
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "usdc_mint",
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "winner",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "start_match",
+      "docs": [
+        "El servidor bloquea la sala y empieza la partida."
+      ],
+      "discriminator": [
+        100,
+        246,
+        223,
+        181,
+        176,
+        101,
+        255,
+        19
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "match_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "match_account.match_id",
+                "account": "Match"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_config",
+      "docs": [
+        "Cambia la configuración. Los campos en `None` no se modifican."
+      ],
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "new_treasury",
+          "optional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "update",
+          "type": {
+            "defined": {
+              "name": "ConfigUpdate"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Match",
+      "discriminator": [
+        236,
+        63,
+        169,
+        38,
+        15,
+        56,
+        196,
+        162
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "MatchCancelled",
+      "discriminator": [
+        99,
+        86,
+        22,
+        122,
+        82,
+        247,
+        60,
+        113
+      ]
+    },
+    {
+      "name": "MatchCreated",
+      "discriminator": [
+        151,
+        176,
+        11,
+        24,
+        34,
+        225,
+        227,
+        16
+      ]
+    },
+    {
+      "name": "MatchSettled",
+      "discriminator": [
+        243,
+        201,
+        134,
+        151,
+        193,
+        131,
+        223,
+        150
+      ]
+    },
+    {
+      "name": "MatchStarted",
+      "discriminator": [
+        69,
+        179,
+        169,
+        249,
+        67,
+        123,
+        163,
+        173
+      ]
+    },
+    {
+      "name": "PlayerJoined",
+      "discriminator": [
+        39,
+        144,
+        49,
+        106,
+        108,
+        210,
+        183,
+        38
+      ]
+    },
+    {
+      "name": "PlayerRefunded",
+      "discriminator": [
+        83,
+        218,
+        165,
+        174,
+        105,
+        50,
+        123,
+        107
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "FeeTooHigh",
+      "msg": "La comisión supera el máximo permitido"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidTimeout",
+      "msg": "El tiempo para liquidar debe ser mayor a cero"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidEntryFee",
+      "msg": "La entrada debe ser mayor a cero"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidMaxPlayers",
+      "msg": "Número de jugadores inválido"
+    },
+    {
+      "code": 6004,
+      "name": "Paused",
+      "msg": "El juego está en pausa"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidState",
+      "msg": "La partida no está en el estado requerido"
+    },
+    {
+      "code": 6006,
+      "name": "MatchFull",
+      "msg": "La sala está llena"
+    },
+    {
+      "code": 6007,
+      "name": "AlreadyJoined",
+      "msg": "El jugador ya está en la partida"
+    },
+    {
+      "code": 6008,
+      "name": "NotAPlayer",
+      "msg": "El jugador no está en la partida"
+    },
+    {
+      "code": 6009,
+      "name": "NotEnoughPlayers",
+      "msg": "No hay suficientes jugadores para empezar"
+    },
+    {
+      "code": 6010,
+      "name": "CancelNotAllowed",
+      "msg": "Solo el servidor puede cancelar antes del tiempo límite"
+    },
+    {
+      "code": 6011,
+      "name": "RefundsPending",
+      "msg": "Aún hay jugadores con reembolso pendiente"
+    }
+  ],
+  "types": [
+    {
+      "name": "Config",
+      "docs": [
+        "Configuración global del juego. Una sola cuenta (PDA `[\"config\"]`)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "Puede cambiar la configuración. Debe ser la upgrade authority del programa."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "Clave del servidor del juego: crea, inicia, liquida y cancela partidas."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "docs": [
+              "Cuenta de tokens USDC que recibe la comisión de la casa."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "usdc_mint",
+            "docs": [
+              "Mint de USDC aceptado. No se puede cambiar después de inicializar."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_bps",
+            "docs": [
+              "Comisión de la casa en puntos básicos (2_000 = 20%)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "settle_timeout_secs",
+            "docs": [
+              "Segundos que tiene el servidor para liquidar una partida iniciada.",
+              "Pasado ese tiempo, cualquiera puede cancelarla y los jugadores recuperan su dinero."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "paused",
+            "docs": [
+              "Si es `true` no se pueden crear partidas nuevas."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdate",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "authority",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "fee_bps",
+            "type": {
+              "option": "u16"
+            }
+          },
+          {
+            "name": "settle_timeout_secs",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "paused",
+            "type": {
+              "option": "bool"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Match",
+      "docs": [
+        "Una partida. PDA `[\"match\", match_id (u64 LE)]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "entry_fee",
+            "docs": [
+              "Entrada por jugador en unidades mínimas de USDC (6 decimales: 1 USDC = 1_000_000)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_players",
+            "type": "u8"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": {
+                "name": "MatchState"
+              }
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "started_at",
+            "type": "i64"
+          },
+          {
+            "name": "winner",
+            "docs": [
+              "`Pubkey::default()` hasta que se liquida."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "players",
+            "docs": [
+              "Jugadores que pagaron su entrada. En una partida cancelada,",
+              "cada jugador sale de la lista al reclamar su reembolso."
+            ],
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "entry_fee",
+            "type": "u64"
+          },
+          {
+            "name": "max_players",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchSettled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "winner",
+            "type": "pubkey"
+          },
+          {
+            "name": "prize",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchStarted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "players",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MatchState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Open"
+          },
+          {
+            "name": "InProgress"
+          },
+          {
+            "name": "Settled"
+          },
+          {
+            "name": "Cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayerJoined",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "players",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayerRefunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "match_id",
+            "type": "u64"
+          },
+          {
+            "name": "player",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

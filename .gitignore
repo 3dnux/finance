@@ -1,0 +1,26 @@
+target/
+node_modules/
+.anchor/
+test-ledger/
+*-keypair.json
+
+# .NET
+dotnet/**/bin/
+dotnet/**/obj/
+
+# Unity
+unity/**/[Ll]ibrary/
+unity/**/[Tt]emp/
+unity/**/[Oo]bj/
+unity/**/[Bb]uild/
+unity/**/[Bb]uilds/
+unity/**/[Ll]ogs/
+unity/**/[Uu]ser[Ss]ettings/
+unity/**/*.csproj
+unity/**/*.sln
+
+# Claves y estado local: nunca al repo
+server.json
+admin.json
+backend-state.json*
+dotnet/**/logs/

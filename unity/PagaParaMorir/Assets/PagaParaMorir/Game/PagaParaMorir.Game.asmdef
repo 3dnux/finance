@@ -1,0 +1,28 @@
+{
+    "name": "PagaParaMorir.Game",
+    "rootNamespace": "PagaParaMorir.Game",
+    "references": [
+        "PagaParaMorir.Escrow",
+        "PagaParaMorir.Rules",
+        "com.solana.unity_sdk",
+        "UnityEngine.UI",
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime",
+        "Unity.Collections"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "PPM_HAS_INPUT_SYSTEM"
+        }
+    ],
+    "noEngineReferences": false
+}
