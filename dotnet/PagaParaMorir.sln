@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PagaParaMorir.Escrow.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PagaParaMorir.DevTool", "PagaParaMorir.DevTool\PagaParaMorir.DevTool.csproj", "{BE2D81F7-F76D-4C7D-8D5E-829E82A3B114}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PagaParaMorir.Rules", "PagaParaMorir.Rules\PagaParaMorir.Rules.csproj", "{3695D22B-9B53-4D29-BF0C-97C162BBD822}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PagaParaMorir.Rules.Tests", "PagaParaMorir.Rules.Tests\PagaParaMorir.Rules.Tests.csproj", "{FBC67B2B-24A9-4C36-8A45-ECA54EE9EBB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{BE2D81F7-F76D-4C7D-8D5E-829E82A3B114}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE2D81F7-F76D-4C7D-8D5E-829E82A3B114}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE2D81F7-F76D-4C7D-8D5E-829E82A3B114}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3695D22B-9B53-4D29-BF0C-97C162BBD822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3695D22B-9B53-4D29-BF0C-97C162BBD822}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3695D22B-9B53-4D29-BF0C-97C162BBD822}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3695D22B-9B53-4D29-BF0C-97C162BBD822}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBC67B2B-24A9-4C36-8A45-ECA54EE9EBB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBC67B2B-24A9-4C36-8A45-ECA54EE9EBB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBC67B2B-24A9-4C36-8A45-ECA54EE9EBB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBC67B2B-24A9-4C36-8A45-ECA54EE9EBB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

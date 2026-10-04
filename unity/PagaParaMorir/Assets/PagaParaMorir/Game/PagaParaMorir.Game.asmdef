@@ -3,9 +3,12 @@
     "rootNamespace": "PagaParaMorir.Game",
     "references": [
         "PagaParaMorir.Escrow",
+        "PagaParaMorir.Rules",
         "com.solana.unity_sdk",
         "UnityEngine.UI",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime",
+        "Unity.Collections"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

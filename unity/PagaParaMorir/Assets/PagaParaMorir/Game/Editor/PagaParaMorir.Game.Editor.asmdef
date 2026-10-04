@@ -2,7 +2,8 @@
     "name": "PagaParaMorir.Game.Editor",
     "rootNamespace": "PagaParaMorir.Game.Editor",
     "references": [
-        "PagaParaMorir.Game"
+        "PagaParaMorir.Game",
+        "Unity.Netcode.Runtime"
     ],
     "includePlatforms": [
         "Editor"

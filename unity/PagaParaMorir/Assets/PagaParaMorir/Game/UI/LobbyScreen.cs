@@ -53,6 +53,10 @@ namespace PagaParaMorir.Game.UI
                 "Para jugar, envía USDC (red Solana) a tu dirección desde Phantom u otra billetera, " +
                 "y un poco de SOL (≈0.01) para las comisiones de red.", 22, Theme.Muted);
             Ui.Spacer(wallet);
+            Ui.Label(wallet, "Práctica sin dinero", 26, Theme.Text, FontStyle.Bold);
+            var practice = Ui.HStack(wallet, 12, 0, TextAnchor.MiddleLeft, "Practice");
+            Ui.Button(practice, "Crear", _app.StartPractice, Theme.Secondary, minWidth: 160);
+            Ui.Button(practice, "Unirse", _app.JoinPractice, Theme.Secondary, minWidth: 160);
             Ui.Button(wallet, "Actualizar", () => RefreshInBackground(), Theme.Secondary);
             if (_app.IsDevNetwork)
                 Ui.Button(wallet, "Pedir 1 SOL de prueba", RequestAirdrop, Theme.Secondary);
@@ -131,13 +135,15 @@ namespace PagaParaMorir.Game.UI
                         Detail(row.info, $"Esperando jugadores · {m.Players.Count}/{m.MaxPlayers} · Pozo {Usdc.Format(m.Pot)}");
                         Ui.Button(row.actions, $"Salir y recuperar {Usdc.Format(m.EntryFee)}",
                             () => Leave(m), Theme.Secondary);
+                        Ui.Button(row.actions, "Jugar", () => _app.PlayMatch(m.MatchId));
                         break;
                     case MatchState.InProgress when EscrowClient.IsSettleExpired(m, config, now):
                         Detail(row.info, "El servidor no reportó ganador a tiempo. Puedes cancelar y recuperar tu entrada.", Theme.Warning);
                         Ui.Button(row.actions, "Cancelar partida", () => CancelExpired(m), Theme.Secondary);
                         break;
                     case MatchState.InProgress:
-                        Detail(row.info, $"En juego · Premio {Usdc.Format(config.PrizeFor(m.Pot))}", Theme.Warning);
+                        Detail(row.info, $"En juego · Premio {Usdc.Format(config.PrizeFor(m.Pot))}. " +
+                                         "Si te desconectaste, quedaste eliminado.", Theme.Warning);
                         break;
                     case MatchState.Cancelled:
                         Detail(row.info, "Partida cancelada. Tu entrada está lista para reclamar.", Theme.Warning);

@@ -70,6 +70,9 @@ namespace PagaParaMorir.Game
         public Task<RequestResult<string>> SignAndSend(Transaction transaction) =>
             Web3.Wallet.SignAndSendTransaction(transaction);
 
+        /// <summary>Firma un mensaje con la billetera (para el boleto de entrada a una partida).</summary>
+        public Task<byte[]> SignMessage(byte[] message) => Web3.Wallet.SignMessage(message);
+
         public Task<RequestResult<string>> RequestAirdrop(ulong lamports) =>
             Web3.Wallet.RequestAirdrop(lamports);
 

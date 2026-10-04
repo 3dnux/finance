@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using PagaParaMorir.Escrow;
 using Solana.Unity.Programs;
@@ -201,15 +200,10 @@ Opciones generales:
             }
         }
 
-        /// <summary>Lee un keypair de Solana CLI: JSON con 64 bytes (secreto + pública).</summary>
         private static Account LoadKeypair(string path)
         {
             if (!File.Exists(path)) throw new ArgumentException($"No existe el keypair {path} (usa --keypair).");
-            // System.Text.Json lee byte[] como base64; el archivo trae una lista de números.
-            var bytes = (JsonSerializer.Deserialize<int[]>(File.ReadAllText(path)) ?? Array.Empty<int>())
-                .Select(b => (byte)b).ToArray();
-            if (bytes.Length != 64) throw new ArgumentException($"{path} no es un keypair de Solana CLI.");
-            return new Account(bytes, bytes.Skip(32).ToArray());
+            return Keypairs.FromSolanaCliJson(File.ReadAllText(path));
         }
     }
 

@@ -4,8 +4,8 @@ Shooter multijugador estilo battle royale donde cada jugador deposita USDC para
 entrar a la partida y **el ganador se lleva el pozo**. Los pagos se liquidan en
 la red **Solana**.
 
-> Estado: contrato de escrow listo para devnet. Nada de esto está listo para
-> dinero real (falta auditoría y revisión legal).
+> Estado: prototipo jugable conectado al escrow (devnet). Nada de esto está listo
+> para dinero real (falta auditoría, anti-cheat y revisión legal).
 
 ## Decisiones
 
@@ -25,9 +25,10 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
 |---|---|
 | `programs/paga-para-morir` | Contrato escrow (Rust + Anchor) y sus pruebas con LiteSVM. |
 | `idl/` | IDL del contrato. |
-| `unity/PagaParaMorir` | Proyecto de Unity: billetera, lobby y pago de entradas ([README](unity/PagaParaMorir/README.md)). |
+| `unity/PagaParaMorir` | Proyecto de Unity: billetera, lobby, partida en red y servidor dedicado ([README](unity/PagaParaMorir/README.md)). |
 | `dotnet/PagaParaMorir.Escrow` | Compila el cliente C# de Unity (`Assets/PagaParaMorir/Escrow`) fuera del editor. |
 | `dotnet/PagaParaMorir.Escrow.Tests` | Pruebas del cliente C#, incluidas partidas reales contra `solana-test-validator`. |
+| `dotnet/PagaParaMorir.Rules.Tests` | Pruebas de las reglas del juego: armas, zona y quién gana. |
 | `dotnet/PagaParaMorir.DevTool` | `ppm`: crea y maneja salas desde la terminal mientras no exista el backend. |
 
 ## Concepto
@@ -53,7 +54,7 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
 | Componente | Tecnología propuesta |
 |---|---|
 | Motor gráfico / cliente | Unity + Solana.Unity-SDK |
-| Netcode | Fish-Net o Photon Fusion (servidor autoritativo) |
+| Netcode | Netcode for GameObjects (oficial de Unity), servidor autoritativo |
 | Hosting de servidores | Edgegap / AWS GameLift |
 | Contrato de escrow | Rust + Anchor |
 | Backend | TypeScript (matchmaking, login con wallet, reporte de resultados) |
@@ -165,7 +166,9 @@ La tesorería queda en la cuenta de USDC de quien firma.
 ## Roadmap MVP
 
 1. ~~Programa escrow en Anchor + pruebas.~~ ✅ Falta desplegar en devnet.
-2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅. Falta el prototipo
-   jugable: arena de 8–16 jugadores, un mapa, 3–4 armas.
-3. Backend de matchmaking + login con wallet + liquidación automática.
+2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅ · ~~prototipo jugable
+   (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅. Falta
+   predicción del cliente, arte y sonido.
+3. Backend: crear salas y levantar un servidor dedicado por sala (la liquidación
+   automática ya la hace el servidor de la partida).
 4. Anti-cheat, auditoría, revisión legal → mainnet.
