@@ -55,6 +55,12 @@ namespace PagaParaMorir.Game.Match
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public readonly NetworkVariable<bool> Reloading = new NetworkVariable<bool>(
             false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        /// <summary>Cómo murió: 0 = vivo, 1 = eliminado, 2 = disparo a la cabeza (se le vuela).</summary>
+        public readonly NetworkVariable<byte> DeathKind = new NetworkVariable<byte>(
+            0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public const byte DiedNormally = 1;
+        public const byte DiedByHeadshot = 2;
+
         /// <summary>Estado de movimiento autoritativo, con el último tick del dueño que el servidor procesó.</summary>
         public readonly NetworkVariable<NetState> State = new NetworkVariable<NetState>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -125,6 +131,7 @@ namespace PagaParaMorir.Game.Match
 
         private CharacterController _controller;
         private Renderer _body;
+        private HamsterModel _model;
         private TextMesh _label;
 
         // Dueño
@@ -199,6 +206,7 @@ namespace PagaParaMorir.Game.Match
 
             WalletId.OnValueChanged += (_, __) => RefreshLooks();
             Alive.OnValueChanged += (_, alive) => OnAliveChanged(alive);
+            DeathKind.OnValueChanged += (_, kind) => { if (kind != 0 && _model != null) _model.Die(kind == DiedByHeadshot); };
             RefreshLooks();
         }
 
@@ -380,9 +388,9 @@ namespace PagaParaMorir.Game.Match
 
         /// <summary>Marca de impacto para quien disparó.</summary>
         [Rpc(SendTo.Owner)]
-        public void HitConfirmedRpc(bool eliminated)
+        public void HitConfirmedRpc(bool eliminated, bool headshot)
         {
-            Hud.Instance?.ShowHitMarker(eliminated);
+            Hud.Instance?.ShowHitMarker(eliminated, headshot);
         }
 
         private static InputPacket Pack(List<PlayerInput> inputs)
@@ -418,10 +426,13 @@ namespace PagaParaMorir.Game.Match
             _camera.nearClipPlane = 0.05f;
             if (_body != null) _body.enabled = false; // primera persona: no vemos nuestro cuerpo
 
-            // Arma en pantalla (solo visual).
+            // Arma en pantalla, sostenida por dos patitas de hámster (solo visual).
             var gun = Visuals.Shape(PrimitiveType.Cube, _camera.transform, new Vector3(0.25f, -0.22f, 0.55f),
                 new Vector3(0.08f, 0.1f, 0.45f), new Color(0.15f, 0.15f, 0.17f));
             gun.name = "ViewGun";
+            var paw = new Color(1f, 0.66f, 0.72f);
+            Visuals.Shape(PrimitiveType.Sphere, gun.transform, new Vector3(-0.9f, -0.6f, -0.25f), new Vector3(1.4f, 1.1f, 0.25f), paw);
+            Visuals.Shape(PrimitiveType.Sphere, gun.transform, new Vector3(0.9f, -0.6f, 0.1f), new Vector3(1.4f, 1.1f, 0.25f), paw);
         }
 
         private void DetachCamera()
@@ -523,7 +534,11 @@ namespace PagaParaMorir.Game.Match
                 {
                     end = hit.point;
                     var victim = hit.collider.GetComponentInParent<NetworkPlayer>();
-                    if (victim != null) GameSession.Instance.Server.OnHit(this, victim, def.Damage);
+                    if (victim != null)
+                    {
+                        var headshot = HitZones.IsHead(hit.point.y, victim.transform.position.y);
+                        GameSession.Instance.Server.OnHit(this, victim, Weapons.DamageFor(def, headshot), headshot);
+                    }
                 }
                 // El trazo sale un poco delante del jugador para que se vea desde su cámara.
                 MatchController.Instance?.ShotRpc(OwnerClientId, origin + direction * 0.6f + Vector3.down * 0.15f, end);
@@ -534,7 +549,8 @@ namespace PagaParaMorir.Game.Match
         {
             closest = default;
             var found = false;
-            foreach (var hit in Physics.RaycastAll(origin, direction, range, ~0, QueryTriggerInteraction.Ignore))
+            // Capas por defecto: ignora "Ignore Raycast" (cabezas voladoras y demás restos).
+            foreach (var hit in Physics.RaycastAll(origin, direction, range, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 if (!found || hit.distance < closest.distance)
@@ -565,8 +581,16 @@ namespace PagaParaMorir.Game.Match
             var health = record?.Health ?? 0;
             var alive = record?.Alive ?? false;
             if (Health.Value != health) Health.Value = health;
+            // Antes que Alive: los clientes ven cómo murió junto con la muerte.
+            if (!alive && DeathKind.Value == 0) DeathKind.Value = DiedNormally;
             if (Alive.Value != alive) Alive.Value = alive;
             if (Frozen.Value != frozen) Frozen.Value = frozen;
+        }
+
+        /// <summary>El golpe que lo eliminó fue en la cabeza (solo servidor).</summary>
+        public void ServerMarkHeadshotDeath()
+        {
+            if (DeathKind.Value == 0) DeathKind.Value = DiedByHeadshot;
         }
 
         // ---------- Otros jugadores ----------
@@ -584,10 +608,10 @@ namespace PagaParaMorir.Game.Match
 
         private void OnAliveChanged(bool alive)
         {
-            // Muerto: sin colisión (los disparos lo atraviesan) y sin cuerpo visible.
+            // Muerto: sin colisión (los disparos lo atraviesan); el hámster queda tirado.
             _controller.enabled = alive;
-            if (_body != null && !IsOwner) _body.enabled = alive;
             if (_label != null) _label.gameObject.SetActive(alive);
+            // La animación la dispara DeathKind (llega junto con esto y dice si fue en la cabeza).
             if (IsOwner && !alive)
             {
                 _prediction.Clear();
@@ -604,7 +628,14 @@ namespace PagaParaMorir.Game.Match
         {
             if (Application.isBatchMode) return;
             var color = Visuals.ColorFor(Id);
-            if (_body != null) _body.material = Visuals.Lit(color);
+            // La cápsula solo sirve de colisión: se ve el hámster.
+            if (_body != null) _body.enabled = false;
+            if (Alive.Value)
+            {
+                if (_model != null) Destroy(_model.gameObject);
+                _model = HamsterModel.Build(transform, Id);
+                if (IsOwner) _model.SetVisible(false); // primera persona
+            }
             if (IsOwner) return;
             if (_label == null)
             {

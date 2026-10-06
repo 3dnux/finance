@@ -27,6 +27,8 @@ namespace PagaParaMorir.Game.Match
         private Text _slots;
         private Text _feed;
         private Text _hitMarker;
+        private Text _headshot;
+        private float _headshotUntil;
         private Text _crosshair;
         private GameObject _pausePanel;
         private GameObject _endPanel;
@@ -54,10 +56,15 @@ namespace PagaParaMorir.Game.Match
             Destroy(gameObject);
         }
 
-        public void ShowHitMarker(bool eliminated)
+        public void ShowHitMarker(bool eliminated, bool headshot)
         {
-            _hitMarker.color = eliminated ? Theme.Accent : Color.white;
+            _hitMarker.color = eliminated ? Theme.Accent : headshot ? Theme.Warning : Color.white;
             _hitMarkerUntil = Time.unscaledTime + (eliminated ? 0.5f : 0.15f);
+            if (headshot)
+            {
+                _headshot.text = eliminated ? "¡LE VOLASTE LA CABEZA!" : "¡A LA CABEZA!";
+                _headshotUntil = Time.unscaledTime + (eliminated ? 1.5f : 0.6f);
+            }
         }
 
         private void OnKill(string text) => _feedLines.Add((text, Time.unscaledTime + KillFeedSeconds));
@@ -69,6 +76,8 @@ namespace PagaParaMorir.Game.Match
 
             _crosshair = Anchored(root, "+", 40, new Vector2(0.5f, 0.5f), TextAnchor.MiddleCenter, Color.white, new Vector2(80, 80));
             _hitMarker = Anchored(root, "×", 56, new Vector2(0.5f, 0.5f), TextAnchor.MiddleCenter, Color.white, new Vector2(80, 80));
+            _headshot = Anchored(root, "", 44, new Vector2(0.5f, 0.5f), TextAnchor.MiddleCenter, Theme.Warning,
+                new Vector2(1000, 70), new Vector2(0, -110));
 
             _banner = Anchored(root, "", 28, new Vector2(0.5f, 1f), TextAnchor.UpperCenter, Theme.Text, new Vector2(1400, 80), new Vector2(0, -24));
             _timer = Anchored(root, "", 34, new Vector2(0.5f, 1f), TextAnchor.UpperCenter, Theme.Warning, new Vector2(800, 50), new Vector2(0, -100));
@@ -146,6 +155,7 @@ namespace PagaParaMorir.Game.Match
             }
 
             _hitMarker.enabled = Time.unscaledTime < _hitMarkerUntil;
+            _headshot.enabled = Time.unscaledTime < _headshotUntil;
             _feedLines.RemoveAll(l => Time.unscaledTime > l.until);
             _feed.text = string.Join("\n", _feedLines.Skip(System.Math.Max(0, _feedLines.Count - KillFeedLines)).Select(l => l.text));
 

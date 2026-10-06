@@ -121,6 +121,14 @@ namespace PagaParaMorir.Rules.Tests
         }
 
         [Fact]
+        public void La_eliminacion_recuerda_si_fue_en_la_cabeza()
+        {
+            var r = Playing("a", "b", "c");
+            Assert.False(r.ApplyDamage("a", "b", 1000, 10).Headshot);
+            Assert.True(r.ApplyDamage("a", "c", 1000, 11, headshot: true).Headshot);
+        }
+
+        [Fact]
         public void Desconectarse_en_juego_es_perder()
         {
             var r = Playing("a", "b");

@@ -216,11 +216,12 @@ namespace PagaParaMorir.Game.Match
             PublishState(now);
         }
 
-        public void OnHit(NetworkPlayer attacker, NetworkPlayer victim, int damage)
+        public void OnHit(NetworkPlayer attacker, NetworkPlayer victim, int damage, bool headshot)
         {
-            var elimination = Referee.ApplyDamage(attacker.Id, victim.Id, damage, Time.timeAsDouble);
+            var elimination = Referee.ApplyDamage(attacker.Id, victim.Id, damage, Time.timeAsDouble, headshot);
+            if (elimination != null && elimination.Headshot) victim.ServerMarkHeadshotDeath();
             victim.ServerSync(Referee.Get(victim.Id), victim.Frozen.Value);
-            attacker.HitConfirmedRpc(elimination != null);
+            attacker.HitConfirmedRpc(elimination != null, headshot);
             if (elimination != null) Announce(elimination);
         }
 
@@ -325,6 +326,8 @@ namespace PagaParaMorir.Game.Match
             string text;
             switch (e.Cause)
             {
+                case EliminationCause.Weapon when e.Headshot:
+                    text = $"{Visuals.ShortId(e.KillerId)} le voló la cabeza a {Visuals.ShortId(e.VictimId)}"; break;
                 case EliminationCause.Weapon: text = $"{Visuals.ShortId(e.KillerId)} eliminó a {Visuals.ShortId(e.VictimId)}"; break;
                 case EliminationCause.Zone: text = $"{Visuals.ShortId(e.VictimId)} murió en la zona"; break;
                 default: text = $"{Visuals.ShortId(e.VictimId)} abandonó la partida"; break;

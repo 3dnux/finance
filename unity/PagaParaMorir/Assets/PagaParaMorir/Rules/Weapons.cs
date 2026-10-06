@@ -49,8 +49,24 @@ namespace PagaParaMorir.Rules
         public int MaxDamagePerShot => Damage * Pellets;
     }
 
+    /// <summary>Zonas de impacto del hámster (cápsula de 2 m con el pivote en el centro).</summary>
+    public static class HitZones
+    {
+        /// <summary>Desde esta altura sobre el pivote empieza la cabeza (los hámsters son cabezones).</summary>
+        public const float HeadHeightAbovePivot = 0.2f;
+
+        public static bool IsHead(float hitY, float pivotY) => hitY - pivotY >= HeadHeightAbovePivot;
+    }
+
     public static class Weapons
     {
+        /// <summary>Un disparo en la cabeza hace este múltiplo del daño (el francotirador mata de un tiro).</summary>
+        public const float HeadshotMultiplier = 1.5f;
+
+        /// <summary>Daño de un proyectil según dónde pegó.</summary>
+        public static int DamageFor(WeaponDef weapon, bool headshot) =>
+            headshot ? (int)Math.Round(weapon.Damage * HeadshotMultiplier) : weapon.Damage;
+
         public static readonly WeaponDef Pistola =
             new WeaponDef(WeaponId.Pistola, "Pistola", 20, 1, 1.0f, 0.25, 12, 1.2, 60f, false);
         public static readonly WeaponDef Rifle =

@@ -8,12 +8,23 @@ de cada partida.
 - **Arena** de 140×140 m con coberturas, generada con semilla fija (igual en todos).
 - **Shooter en primera persona:** WASD, ratón, saltar, 4 armas:
 
-  | Arma | Daño | Cadencia | Cargador | Alcance |
-  |---|---|---|---|---|
-  | Pistola | 20 | 4/s | 12 | 60 m |
-  | Rifle (automático) | 14 | 10/s | 30 | 80 m |
-  | Escopeta | 10 × 8 perdigones | ~1/s | 6 | 20 m |
-  | Francotirador | 85 | 1 cada 1.5 s | 4 | 200 m |
+  | Arma | Daño | En la cabeza | Cadencia | Cargador | Alcance |
+  |---|---|---|---|---|---|
+  | Pistola | 20 | 30 | 4/s | 12 | 60 m |
+  | Rifle (automático) | 14 | 21 | 10/s | 30 | 80 m |
+  | Escopeta | 10 × 8 perdigones | 15 × 8 | ~1/s | 6 | 20 m |
+  | Francotirador | 85 | 128 (mata de un tiro) | 1 cada 1.5 s | 4 | 200 m |
+
+- **Los personajes son hámsters** (`Game/Match/HamsterModel.cs`): cabezones, cachetones,
+  con pelaje de 6 colores y un pañuelo del color del jugador para reconocerlo.
+  - **Disparo a la cabeza:** hace 1.5× de daño (`Weapons.HeadshotMultiplier`). El
+    servidor decide si fue en la cabeza: el impacto debe quedar a 0.2 m o más sobre el
+    centro del jugador (`Rules/HitZones`).
+  - **Si la bala que mata es en la cabeza, se la vuela:** la cabeza sale rodando por la
+    arena, salpica, y el cuerpo se queda parado un momento con el hueso del cuello de
+    fuera antes de caer. Todos lo ven igual: el servidor lo sincroniza.
+  - Si muere por el cuerpo o por la zona, cae noqueado con los ojos cerrados.
+  - Los restos no frenan las balas.
 
 - **Zona que se cierra** en 4 fases (~3 minutos). Fuera de ella pierdes vida cada segundo.
 - **Gana el último en pie.** Desempates:
@@ -214,5 +225,5 @@ Assets/PagaParaMorir/
   internet, contra alguien que se mueve, hay que apuntar un poco adelante.
 - **Anti-cheat:** el servidor confía en hacia dónde apuntas (aimbots).
 - **Quien hospeda una práctica** ve a los demás moverse a saltos de 30 Hz (no interpola en el host).
-- **Arte y sonido:** todo son primitivas de colores.
+- **Arte y sonido:** todo son primitivas de colores (los hámsters también). Sin sonido.
 - **Reconexión:** si te desconectas en juego, quedas eliminado.

@@ -8,6 +8,8 @@ namespace PagaParaMorir.Game.Match
     public static class Visuals
     {
         private static Material _litBase;
+        private static readonly System.Collections.Generic.Dictionary<Color, Material> _litCache =
+            new System.Collections.Generic.Dictionary<Color, Material>();
         private static Material _unlitBase;
 
         /// <summary>Material con iluminación (copia el material por defecto de las primitivas).</summary>
@@ -20,6 +22,14 @@ namespace PagaParaMorir.Game.Match
                 Object.Destroy(probe);
             }
             return new Material(_litBase) { color = color };
+        }
+
+        /// <summary>Material compartido por color (los hámsters usan muchos trozos del mismo color).</summary>
+        public static Material LitShared(Color color)
+        {
+            if (!_litCache.TryGetValue(color, out var material) || material == null)
+                _litCache[color] = material = Lit(color);
+            return material;
         }
 
         /// <summary>Material sin iluminación para líneas (zona, disparos).</summary>
@@ -41,7 +51,7 @@ namespace PagaParaMorir.Game.Match
             go.transform.SetParent(parent, false);
             go.transform.localPosition = localPosition;
             go.transform.localScale = scale;
-            go.GetComponent<Renderer>().material = Lit(color);
+            go.GetComponent<Renderer>().sharedMaterial = LitShared(color);
             return go;
         }
 

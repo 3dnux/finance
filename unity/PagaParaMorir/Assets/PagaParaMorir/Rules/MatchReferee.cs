@@ -93,13 +93,16 @@ namespace PagaParaMorir.Rules
         public string KillerId { get; }
         public EliminationCause Cause { get; }
         public double At { get; }
+        /// <summary>El golpe final fue en la cabeza.</summary>
+        public bool Headshot { get; }
 
-        public Elimination(string victimId, string killerId, EliminationCause cause, double at)
+        public Elimination(string victimId, string killerId, EliminationCause cause, double at, bool headshot = false)
         {
             VictimId = victimId;
             KillerId = killerId;
             Cause = cause;
             At = at;
+            Headshot = headshot;
         }
     }
 
@@ -282,7 +285,7 @@ namespace PagaParaMorir.Rules
         }
 
         /// <summary>Daño de arma. Devuelve la eliminación si el golpe fue mortal.</summary>
-        public Elimination ApplyDamage(string attackerId, string victimId, int amount, double now)
+        public Elimination ApplyDamage(string attackerId, string victimId, int amount, double now, bool headshot = false)
         {
             if (Phase != MatchPhase.Playing || amount <= 0 || attackerId == victimId) return null;
             var attacker = Get(attackerId);
@@ -295,7 +298,7 @@ namespace PagaParaMorir.Rules
             if (victim.Health > 0) return null;
 
             attacker.Kills++;
-            var e = Eliminate(victim, attacker.Id, EliminationCause.Weapon, now);
+            var e = Eliminate(victim, attacker.Id, EliminationCause.Weapon, now, headshot);
             CheckFinish(now);
             return e;
         }
@@ -321,14 +324,14 @@ namespace PagaParaMorir.Rules
             return eliminations;
         }
 
-        private Elimination Eliminate(PlayerRecord p, string killerId, EliminationCause cause, double now)
+        private Elimination Eliminate(PlayerRecord p, string killerId, EliminationCause cause, double now, bool headshot = false)
         {
             p.Alive = false;
             p.Health = 0;
             p.EliminatedAt = now;
             p.Cause = cause;
             p.KillerId = killerId;
-            return new Elimination(p.Id, killerId, cause, now);
+            return new Elimination(p.Id, killerId, cause, now, headshot);
         }
 
         private void CheckFinish(double now)

@@ -47,10 +47,31 @@ namespace PagaParaMorir.Rules.Tests
         }
 
         [Fact]
-        public void Francotirador_no_mata_de_un_tiro()
+        public void Al_cuerpo_ningun_arma_mata_de_un_tiro()
         {
-            // 100 de vida: hacen falta dos impactos de cualquier arma.
+            // 100 de vida: al cuerpo hacen falta dos impactos de cualquier arma.
             foreach (var w in Weapons.All) Assert.True(w.MaxDamagePerShot < 100, w.Name);
+        }
+
+        [Fact]
+        public void En_la_cabeza_el_francotirador_mata_de_un_tiro()
+        {
+            Assert.Equal(128, Weapons.DamageFor(Weapons.Francotirador, headshot: true));
+            Assert.Equal(85, Weapons.DamageFor(Weapons.Francotirador, headshot: false));
+            Assert.Equal(30, Weapons.DamageFor(Weapons.Pistola, headshot: true));
+            // Las demás no matan de un tiro ni en la cabeza.
+            Assert.True(Weapons.DamageFor(Weapons.Rifle, true) * Weapons.Rifle.Pellets < 100);
+            Assert.True(Weapons.DamageFor(Weapons.Pistola, true) < 100);
+        }
+
+        [Theory]
+        [InlineData(0.95f, true)]   // coronilla
+        [InlineData(0.22f, true)]   // justo arriba del cuello
+        [InlineData(0.18f, false)]  // cuello / pañuelo
+        [InlineData(-0.5f, false)]  // panza
+        public void Zona_de_la_cabeza(float heightAbovePivot, bool head)
+        {
+            Assert.Equal(head, HitZones.IsHead(10f + heightAbovePivot, 10f));
         }
 
         [Fact]

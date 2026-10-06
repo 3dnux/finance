@@ -191,7 +191,8 @@ despliega en un `solana-test-validator` y crea un USDC de prueba.
 
 1. ~~Programa escrow en Anchor + pruebas~~ ✅ · ~~script de despliegue en devnet~~ ✅ (`scripts/deploy.sh`).
 2. Cliente Unity: ~~billetera, lobby y pago de entradas~~ ✅ · ~~prototipo jugable
-   (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅ · ~~predicción
+   (arena, 4 armas, zona, servidor dedicado que paga al ganador)~~ ✅ · ~~hámsters con
+   disparos a la cabeza que se la vuelan~~ ✅ · ~~predicción
    del cliente~~ ✅. Falta compensación de lag, arte y sonido.
 3. ~~Backend: salas automáticas, un servidor por sala y red de seguridad~~ ✅. Falta
    un lanzador para la nube (Edgegap/GameLift), HTTPS y la clave en un KMS.
