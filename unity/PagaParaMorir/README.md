@@ -1,4 +1,4 @@
-# Paga para Morir — cliente y servidor Unity (PC)
+# Paga para Morir — cliente y servidor Unity (PC y Android)
 
 El mismo proyecto es el juego del jugador (lobby + partida) y el servidor dedicado
 de cada partida.
@@ -75,7 +75,7 @@ hace en navegador (WebGL) y en móvil. Por eso cada jugador tiene una billetera 
 
 ## Requisitos
 
-- Unity **6 LTS (6000.0)** con *Windows Build Support*.
+- Unity **6 LTS (6000.0)** con *Windows Build Support* (y *Android Build Support* para compilar el APK en tu equipo).
 - **Git** instalado: Unity descarga el SDK de Solana desde GitHub.
 
 ## Abrir el proyecto
@@ -117,6 +117,52 @@ En el objeto `PagaParaMorir` de la escena (componente `PagaParaMorirApp`):
 | `gameServerAddress` / `gameServerPort` | Servidor fijo si no hay backend; también el equipo al que se une **Unirse** en práctica. |
 | `practicePort` | Puerto de las prácticas sin dinero (7778). |
 
+## Android
+
+- **Controles táctiles:**
+  - Palanca a la izquierda para moverte.
+  - Arrastra a la derecha para mirar.
+  - **DISPARAR**: mientras lo mantienes, también puedes arrastrar para apuntar.
+  - **SALTAR**, **RECARGAR**, **ARMA** (pasa a la siguiente) y **MENÚ**.
+  - Aparecen solos en teléfonos y tablets. En PC siguen el teclado y el ratón.
+- **Billetera:** además de la billetera del juego, en Android puedes tocar
+  **Conectar Phantom / Solflare** y usar la que ya tienes (Mobile Wallet Adapter).
+  Las firmas (pagar la entrada, el boleto para jugar) se aprueban en esa app.
+- **Direcciones:** en el teléfono, `127.0.0.1` es el propio teléfono. `backendUrl` y
+  `gameServerAddress` deben apuntar a la IP o dominio de tu servidor.
+- Antes de lanzar en el teléfono, cambia `walletIdentityUri` por el dominio del juego:
+  Phantom y Solflare lo muestran al pedir permiso para conectarse.
+
+### Compilar el APK de Android
+
+**En GitHub Actions** (no necesitas Android Studio):
+
+1. Consigue tu archivo de licencia de Unity. Con Unity Hub abierto y tu licencia
+   Personal activada, está en:
+   - Windows: `C:\ProgramData\Unity\Unity_lic.ulf`
+   - macOS: `/Library/Application Support/Unity/Unity_lic.ulf`
+   - Linux: `~/.local/share/unity3d/Unity/Unity_lic.ulf`
+2. En GitHub: **Settings → Secrets and variables → Actions → New repository secret**:
+   - `UNITY_LICENSE`: el contenido completo del `.ulf`.
+   - `UNITY_EMAIL` y `UNITY_PASSWORD`: los de tu cuenta de Unity.
+3. **Actions → APK de Android → Run workflow**. También corre solo cuando cambias
+   algo en `unity/`. Tarda ~30–60 min la primera vez y menos después, gracias a la caché.
+4. Al terminar, descarga el artefacto **PagaParaMorir-apk**: es un zip con el `.apk`.
+
+**En tu equipo:** instala el módulo *Android Build Support* en Unity Hub y usa el
+menú **Paga para Morir → Compilar APK de Android**. El APK queda en
+`Builds/Android/PagaParaMorir.apk`.
+
+**Instalarlo:** pasa el `.apk` al teléfono y ábrelo. Android te pedirá permitir
+"instalar apps de origen desconocido" para esa app (el navegador o el gestor de archivos).
+
+**Firma:** sin más configuración, el APK se firma con una llave de depuración, que
+sirve para instalarlo a mano. Para Google Play necesitas tu propia llave: agrega los
+secretos `ANDROID_KEYSTORE_BASE64` (el `.keystore` en base64), `ANDROID_KEYSTORE_PASS`,
+`ANDROID_KEYALIAS_NAME` y `ANDROID_KEYALIAS_PASS`. Ojo: Google Play solo permite juegos
+con apuestas de dinero real en algunos países y con licencia de juego. Revísalo antes
+de publicar.
+
 ## Servidor dedicado de una partida con dinero
 
 Haz un build (Windows/Linux, o *Dedicated Server*) y lánzalo así por cada sala:
@@ -157,7 +203,8 @@ Assets/PagaParaMorir/
   Game/     PagaParaMorirApp (punto de entrada), WalletService y pantallas (UI/).
   Game/Match/  La partida en red: GameSession (servidor/práctica/cliente), MatchServer
             (árbitro + Solana), NetworkPlayer, MatchController, Arena y Hud.
-  Game/Editor/  Menú "Paga para Morir" (crear escena y prefabs, borrar billetera de prueba).
+  Game/Editor/  Menú "Paga para Morir": crear escena y prefabs, compilar el APK de Android
+            o el servidor dedicado de Linux (BuildScript, también por línea de comandos).
 ```
 
 ## Lo que falta en el prototipo

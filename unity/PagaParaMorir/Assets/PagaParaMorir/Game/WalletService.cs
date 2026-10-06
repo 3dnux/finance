@@ -22,6 +22,19 @@ namespace PagaParaMorir.Game
 
         public bool IsLoggedIn => Web3.Account != null;
 
+        /// <summary>
+        /// En Android el jugador puede usar la billetera que ya tiene (Phantom, Solflare…) con el
+        /// Mobile Wallet Adapter, en vez de la billetera del juego.
+        /// </summary>
+        public static bool CanUseWalletApp => Application.platform == RuntimePlatform.Android;
+
+        /// <summary>Conecta Phantom/Solflare en Android. Devuelve false si el jugador no aprobó.</summary>
+        public async Task<bool> ConnectWalletApp()
+        {
+            var account = await Web3.Instance.LoginWalletAdapter();
+            return account != null;
+        }
+
         public PublicKey PublicKey => Web3.Account?.PublicKey;
 
         /// <summary>Abre la billetera guardada. Devuelve <c>false</c> si la contraseña no es correcta.</summary>

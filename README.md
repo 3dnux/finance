@@ -11,11 +11,11 @@ la red **Solana**.
 
 | Tema | Decisión |
 |---|---|
-| Plataforma | PC |
+| Plataforma | PC y Android |
 | Lenguaje del juego | C# (Unity) |
 | Premio | El ganador se lleva todo el pozo |
 | Comisión de la casa | 20% (`fee_bps = 2000`, tope en el contrato: 25%) |
-| Billetera en PC | Billetera dentro del juego (el SDK no conecta Phantom en Windows); el jugador le manda USDC |
+| Billetera | PC: billetera dentro del juego (el SDK no conecta Phantom en Windows). Android: también Phantom/Solflare con Mobile Wallet Adapter |
 
 Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a la casa.
 
@@ -25,6 +25,7 @@ Ejemplo: 10 jugadores × 5 USDC = 50 USDC → **40 USDC al ganador**, 10 USDC a 
 |---|---|
 | `programs/paga-para-morir` | Contrato escrow (Rust + Anchor) y sus pruebas con LiteSVM. |
 | `idl/` | IDL del contrato. |
+| `.github/workflows/android.yml` | Compila el APK de Android en GitHub Actions ([cómo](unity/PagaParaMorir/README.md#compilar-el-apk-de-android)). |
 | `unity/PagaParaMorir` | Proyecto de Unity: billetera, lobby, partida en red y servidor dedicado ([README](unity/PagaParaMorir/README.md)). |
 | `dotnet/PagaParaMorir.Escrow` | Compila el cliente C# de Unity (`Assets/PagaParaMorir/Escrow`) fuera del editor. |
 | `dotnet/PagaParaMorir.Escrow.Tests` | Pruebas del cliente C#, incluidas partidas reales contra `solana-test-validator`. |

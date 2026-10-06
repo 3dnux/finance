@@ -64,6 +64,9 @@ namespace PagaParaMorir.Game.Match
 
         private void Build(Transform root)
         {
+            var touch = PlayerInputReader.IsTouchDevice;
+            if (touch) TouchControls.Create(root);
+
             _crosshair = Anchored(root, "+", 40, new Vector2(0.5f, 0.5f), TextAnchor.MiddleCenter, Color.white, new Vector2(80, 80));
             _hitMarker = Anchored(root, "×", 56, new Vector2(0.5f, 0.5f), TextAnchor.MiddleCenter, Color.white, new Vector2(80, 80));
 
@@ -74,10 +77,13 @@ namespace PagaParaMorir.Game.Match
             _warning = Anchored(root, "", 36, new Vector2(0.5f, 0.38f), TextAnchor.MiddleCenter, Theme.Accent, new Vector2(1200, 60));
             _feed = Anchored(root, "", 24, new Vector2(0f, 0.75f), TextAnchor.UpperLeft, Theme.Text, new Vector2(700, 220), new Vector2(32, 0));
 
-            // Vida
-            _health = Anchored(root, "", 40, new Vector2(0f, 0f), TextAnchor.LowerLeft, Theme.Text, new Vector2(500, 60), new Vector2(32, 80));
+            // Vida (en teléfono va arriba: abajo a la izquierda está la palanca)
+            var healthAnchor = touch ? new Vector2(0f, 1f) : new Vector2(0f, 0f);
+            _health = Anchored(root, "", 40, healthAnchor, touch ? TextAnchor.UpperLeft : TextAnchor.LowerLeft, Theme.Text,
+                new Vector2(500, 60), touch ? new Vector2(32, -24) : new Vector2(32, 80));
             var barBack = Ui.Panel(root, new Color(0, 0, 0, 0.5f), "HealthBar");
-            SetAnchored(barBack.rectTransform, new Vector2(0f, 0f), new Vector2(420, 22), new Vector2(32, 44), new Vector2(0, 0));
+            SetAnchored(barBack.rectTransform, healthAnchor, new Vector2(420, 22),
+                touch ? new Vector2(32, -90) : new Vector2(32, 44), healthAnchor);
             var fill = Ui.Panel(barBack.transform, Theme.Success, "Fill");
             _healthFill = fill.rectTransform;
             _healthFill.anchorMin = Vector2.zero;
@@ -85,12 +91,17 @@ namespace PagaParaMorir.Game.Match
             _healthFill.pivot = new Vector2(0, 0.5f);
             _healthFill.offsetMin = _healthFill.offsetMax = Vector2.zero;
 
-            // Arma
-            _weapon = Anchored(root, "", 40, new Vector2(1f, 0f), TextAnchor.LowerRight, Theme.Text, new Vector2(700, 60), new Vector2(-32, 80));
-            _slots = Anchored(root, "", 22, new Vector2(1f, 0f), TextAnchor.LowerRight, Theme.Muted, new Vector2(900, 40), new Vector2(-32, 40));
+            // Arma (en teléfono va arriba: abajo a la derecha están los botones)
+            var weaponAnchor = touch ? new Vector2(1f, 1f) : new Vector2(1f, 0f);
+            var weaponAlign = touch ? TextAnchor.UpperRight : TextAnchor.LowerRight;
+            _weapon = Anchored(root, "", 40, weaponAnchor, weaponAlign, Theme.Text, new Vector2(700, 60),
+                touch ? new Vector2(-32, -210) : new Vector2(-32, 80));
+            _slots = Anchored(root, "", 22, weaponAnchor, weaponAlign, Theme.Muted, new Vector2(900, 40),
+                touch ? new Vector2(-32, -270) : new Vector2(-32, 40));
 
-            Anchored(root, "WASD moverse · Ratón apuntar · Clic disparar · Espacio saltar · R recargar · 1-4 armas · Esc menú",
-                18, new Vector2(0.5f, 0f), TextAnchor.LowerCenter, Theme.Muted, new Vector2(1400, 30), new Vector2(0, 12));
+            if (!touch)
+                Anchored(root, "WASD moverse · Ratón apuntar · Clic disparar · Espacio saltar · R recargar · 1-4 armas · Esc menú",
+                    18, new Vector2(0.5f, 0f), TextAnchor.LowerCenter, Theme.Muted, new Vector2(1400, 30), new Vector2(0, 12));
 
             _pausePanel = BuildPanel(root, "Pausa", out _, out _,
                 ("Volver a jugar", () => PlayerInputReader.LockCursor(true)),

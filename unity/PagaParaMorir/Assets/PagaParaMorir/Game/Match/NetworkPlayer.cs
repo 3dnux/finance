@@ -251,6 +251,7 @@ namespace PagaParaMorir.Game.Match
                 _jumpPending |= input.Jump;
                 _reloadPending |= input.Reload;
                 if (input.WeaponSlot >= 0) _selectedWeapon = (byte)input.WeaponSlot;
+                if (input.NextWeapon) _selectedWeapon = (byte)((_selectedWeapon + 1) % Weapons.All.Count);
             }
 
             if (Predicting) Reconcile();

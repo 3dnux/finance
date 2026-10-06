@@ -25,6 +25,10 @@ namespace PagaParaMorir.Game
         [Tooltip("Program ID del escrow desplegado (cámbialo después de `anchor keys sync`).")]
         public string programId = EscrowProgram.DefaultProgramId;
 
+        [Header("Android")]
+        [Tooltip("Sitio del juego: Phantom/Solflare lo muestran al pedir permiso para conectarse.")]
+        public string walletIdentityUri = "https://pagaparamorir.gg";
+
         [Header("Lobby")]
         [Tooltip("Cada cuántos segundos se actualizan las salas.")]
         public float refreshSeconds = 5f;
@@ -67,6 +71,11 @@ namespace PagaParaMorir.Game
         private void Awake()
         {
             DontDestroyOnLoad(gameObject);
+            if (Application.isMobilePlatform)
+            {
+                Application.targetFrameRate = 60; // en teléfonos Unity limita a 30 por defecto
+                Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            }
             ServerOptions server;
             try
             {
@@ -212,6 +221,19 @@ namespace PagaParaMorir.Game
             web3.rpcCluster = cluster;
             web3.customRpc = customRpc;
             web3.autoConnectOnStartup = false;
+            // Opciones del Mobile Wallet Adapter (Android). El SDK también lee las de WebGL al conectar.
+            web3.solanaWalletAdapterOptions = new SolanaWalletAdapterOptions
+            {
+                solanaMobileWalletAdapterOptions = new SolanaMobileWalletAdapterOptions
+                {
+                    identityUri = walletIdentityUri,
+                    iconUri = "/favicon.ico",
+                    name = "Paga para Morir",
+                    keepConnectionAlive = true,
+                },
+                solanaWalletAdapterWebGLOptions = new SolanaWalletAdapterWebGLOptions(),
+                phantomWalletOptions = new PhantomWalletOptions(),
+            };
         }
 
         private void BuildLayout()

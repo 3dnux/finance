@@ -48,6 +48,20 @@ namespace PagaParaMorir.Game.UI
             Ui.Button(_card, "Usar otra billetera", ShowChoose, Theme.Secondary);
         }
 
+        private void AddWalletAppButton()
+        {
+            if (!WalletService.CanUseWalletApp) return;
+            Ui.Button(_card, "Conectar Phantom / Solflare", () => Run(async () =>
+            {
+                if (await _app.Wallet.ConnectWalletApp())
+                {
+                    _app.Status.Success("Billetera conectada.");
+                    _app.OnLoggedIn();
+                }
+                else _app.Status.Error("No se conectó la billetera. ¿Tienes Phantom o Solflare instalada?");
+            }));
+        }
+
         private void ShowChoose()
         {
             Ui.Clear(_card);
@@ -58,6 +72,7 @@ namespace PagaParaMorir.Game.UI
             if (_app.Wallet.HasSavedWallet)
                 Ui.Label(_card, "Ojo: crear o restaurar otra reemplaza la billetera guardada en este equipo. " +
                                 "Asegúrate de tener sus 12 palabras.", 24, Theme.Warning);
+            AddWalletAppButton();
             Ui.Button(_card, "Crear billetera nueva", ShowCreate);
             Ui.Button(_card, "Restaurar con mis 12 palabras", ShowImport, Theme.Secondary);
             if (_app.Wallet.HasSavedWallet) Ui.Button(_card, "Volver", ShowLogin, Theme.Secondary);

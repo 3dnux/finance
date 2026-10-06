@@ -5,6 +5,7 @@ using Unity.Netcode.Transports.UTP;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using NetworkPlayer = PagaParaMorir.Game.Match.NetworkPlayer;
 
 namespace PagaParaMorir.Game.Editor
 {
@@ -14,6 +15,8 @@ namespace PagaParaMorir.Game.Editor
         private const string ScenePath = "Assets/PagaParaMorir/Scenes/Main.unity";
         private const string PrefabDir = "Assets/PagaParaMorir/Prefabs";
 
+        public const string MainScenePath = ScenePath;
+
         [MenuItem("Paga para Morir/Crear escena principal")]
         public static void CreateMainScene()
         {
@@ -21,7 +24,25 @@ namespace PagaParaMorir.Game.Editor
                 !EditorUtility.DisplayDialog("Paga para Morir", "La escena Main ya existe. ¿Reemplazarla?", "Reemplazar", "Cancelar"))
                 return;
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            BuildMainScene();
+        }
 
+        /// <summary>Crea la escena y los prefabs si faltan (para compilar desde la línea de comandos).</summary>
+        public static void EnsureMainScene()
+        {
+            if (File.Exists(ScenePath) && File.Exists($"{PrefabDir}/NetworkPlayer.prefab") &&
+                File.Exists($"{PrefabDir}/NetworkMatch.prefab"))
+            {
+                EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+                return;
+            }
+            BuildMainScene();
+        }
+
+        /// <summary>Arma prefabs y escena sin preguntar nada.</summary>
+        public static void BuildMainScene()
+        {
+            BuildScript.ConfigureCommon();
             Directory.CreateDirectory(PrefabDir);
             var playerPrefab = CreatePlayerPrefab();
             var matchPrefab = CreateMatchPrefab();

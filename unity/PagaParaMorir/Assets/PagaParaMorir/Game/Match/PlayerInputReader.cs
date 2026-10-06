@@ -15,13 +15,25 @@ namespace PagaParaMorir.Game.Match
         public bool Reload;
         /// <summary>0-3 si se apretó una tecla de arma; -1 si no.</summary>
         public int WeaponSlot;
+        /// <summary>Botón táctil "ARMA": pasar a la siguiente.</summary>
+        public bool NextWeapon;
         public bool ToggleCursor;
     }
 
-    /// <summary>Teclado y ratón, con el Input System nuevo o el antiguo según el proyecto.</summary>
+    /// <summary>
+    /// Teclado y ratón (Input System nuevo o antiguo, según el proyecto) y, en teléfonos,
+    /// los controles táctiles de <see cref="TouchControls"/>.
+    /// </summary>
     public static class PlayerInputReader
     {
         public static float Sensitivity = 1f;
+        /// <summary>Grados por píxel de arrastre en pantalla táctil.</summary>
+        public static float TouchSensitivity = 0.15f;
+
+        /// <summary>Teléfono o tablet: no hay cursor que bloquear.</summary>
+        public static bool IsTouchDevice => Application.isMobilePlatform;
+
+        private static bool _touchCaptured;
 
         public static InputSnapshot Read()
         {
@@ -42,7 +54,7 @@ namespace PagaParaMorir.Game.Match
                 if (kb.digit3Key.wasPressedThisFrame) s.WeaponSlot = 2;
                 if (kb.digit4Key.wasPressedThisFrame) s.WeaponSlot = 3;
             }
-            if (mouse != null)
+            if (mouse != null && !TouchInput.Active)
             {
                 s.Look = mouse.delta.ReadValue() * 0.08f * Sensitivity;
                 s.FireHeld = mouse.leftButton.isPressed;
@@ -51,9 +63,13 @@ namespace PagaParaMorir.Game.Match
             s.Move = new Vector2(
                 (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0),
                 (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0));
-            s.Look = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * 2f * Sensitivity;
+            // En teléfonos los toques simulan el ratón: ignorarlo para no disparar al mover la palanca.
+            if (!TouchInput.Active)
+            {
+                s.Look = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * 2f * Sensitivity;
+                s.FireHeld = Input.GetMouseButton(0);
+            }
             s.Jump = Input.GetKeyDown(KeyCode.Space);
-            s.FireHeld = Input.GetMouseButton(0);
             s.Reload = Input.GetKeyDown(KeyCode.R);
             s.ToggleCursor = Input.GetKeyDown(KeyCode.Escape);
             if (Input.GetKeyDown(KeyCode.Alpha1)) s.WeaponSlot = 0;
@@ -61,13 +77,32 @@ namespace PagaParaMorir.Game.Match
             if (Input.GetKeyDown(KeyCode.Alpha3)) s.WeaponSlot = 2;
             if (Input.GetKeyDown(KeyCode.Alpha4)) s.WeaponSlot = 3;
 #endif
+            if (TouchInput.Active) MergeTouch(ref s);
             return s;
         }
 
-        public static bool CursorLocked => Cursor.lockState == CursorLockMode.Locked;
+        private static void MergeTouch(ref InputSnapshot s)
+        {
+            TouchInput.Consume(out var look, out var jump, out var reload, out var nextWeapon, out var menu);
+            if (TouchInput.Move.sqrMagnitude > s.Move.sqrMagnitude) s.Move = TouchInput.Move;
+            s.Look += look * TouchSensitivity * Sensitivity;
+            s.FireHeld |= TouchInput.FireHeld;
+            s.Jump |= jump;
+            s.Reload |= reload;
+            s.NextWeapon |= nextWeapon;
+            s.ToggleCursor |= menu;
+        }
+
+        /// <summary>
+        /// ¿El juego tiene el control? En PC: el ratón está capturado. En teléfono: no está
+        /// abierto el menú de pausa.
+        /// </summary>
+        public static bool CursorLocked => IsTouchDevice ? _touchCaptured : Cursor.lockState == CursorLockMode.Locked;
 
         public static void LockCursor(bool locked)
         {
+            _touchCaptured = locked;
+            if (IsTouchDevice) return;
             Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !locked;
         }
